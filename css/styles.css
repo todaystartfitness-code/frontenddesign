@@ -615,6 +615,74 @@ section[id], article[id] {
 .studio-copy p { max-width: 48ch; }
 
 /* ==========================================================================
+   Recovery
+   ========================================================================== */
+.recovery { padding: var(--space-7) 0; }
+
+.recovery-intro {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--space-6);
+  align-items: center;
+  margin-bottom: var(--space-5);
+}
+@media (max-width: 860px) {
+  .recovery-intro { grid-template-columns: 1fr; gap: var(--space-4); }
+}
+
+.recovery-copy h2 { margin-bottom: var(--space-3); }
+.recovery-copy p { max-width: 50ch; }
+
+.recovery-hero {
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 3 / 4;
+  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+}
+.recovery-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.recovery-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+@media (max-width: 640px) {
+  .recovery-gallery { grid-template-columns: 1fr; }
+}
+
+.recovery-gallery figure {
+  margin: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.recovery-gallery img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
+}
+.recovery-gallery figcaption {
+  padding: var(--space-2);
+  text-align: center;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.82rem;
+  color: var(--sage);
+}
+
+/* ==========================================================================
    About
    ========================================================================== */
 .about {
