@@ -28,6 +28,54 @@
     });
   });
 
+  /* ---------------- Studio video ---------------- */
+  (function studioVideo() {
+    var video = document.getElementById("studio-video");
+    var toggle = document.getElementById("video-toggle");
+    if (!video || !toggle) return;
+
+    var userPaused = false;
+
+    function play() {
+      video.play().catch(function () {});
+      toggle.setAttribute("aria-pressed", "false");
+      toggle.setAttribute("aria-label", "Pause studio video");
+    }
+    function pause() {
+      video.pause();
+      toggle.setAttribute("aria-pressed", "true");
+      toggle.setAttribute("aria-label", "Play studio video");
+    }
+
+    toggle.addEventListener("click", function () {
+      if (video.paused) {
+        userPaused = false;
+        play();
+      } else {
+        userPaused = true;
+        pause();
+      }
+    });
+
+    if (prefersReducedMotion) {
+      pause();
+    } else if ("IntersectionObserver" in window) {
+      var observer = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (userPaused) return;
+            if (entry.isIntersecting) play();
+            else video.pause();
+          });
+        },
+        { threshold: 0.4 }
+      );
+      observer.observe(video);
+    } else {
+      play();
+    }
+  })();
+
   /* ---------------- Dust particle canvas (hero ambiance) ---------------- */
   (function dustField() {
     var canvas = document.getElementById("dust-canvas");
