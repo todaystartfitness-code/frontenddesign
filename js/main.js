@@ -282,4 +282,16 @@
       el.textContent = stat.getAttribute("data-count") + (stat.getAttribute("data-suffix") || "");
     });
   }
+
+  /* ---------------- Safety net: never leave content permanently invisible ---------------- */
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      document.querySelectorAll(".reveal, .reveal-up, .line").forEach(function (el) {
+        if (parseFloat(getComputedStyle(el).opacity) === 0) {
+          el.style.opacity = "1";
+          el.style.transform = "none";
+        }
+      });
+    }, 2500);
+  });
 })();
