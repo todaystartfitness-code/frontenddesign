@@ -112,8 +112,8 @@
       for (var i = 0; i < count; i++) particles.push(makeParticle());
     }
 
-    var rafId;
-    function tick() {
+    var rafId = null;
+    function frame() {
       ctx.clearRect(0, 0, w, h);
       particles.forEach(function (p) {
         p.x += p.vx;
@@ -124,7 +124,14 @@
         ctx.fillStyle = "rgba(219, 165, 76, " + p.a + ")";
         ctx.fill();
       });
-      rafId = requestAnimationFrame(tick);
+      rafId = requestAnimationFrame(frame);
+    }
+    function start() {
+      if (rafId === null) rafId = requestAnimationFrame(frame);
+    }
+    function stop() {
+      cancelAnimationFrame(rafId);
+      rafId = null;
     }
 
     var resizeTimer;
@@ -134,11 +141,28 @@
     });
 
     init();
-    tick();
+
+    /* Only run the animation loop while the hero is actually on screen —
+       otherwise this rAF loop keeps eating main-thread time for the rest
+       of the page's lifetime, competing with scroll/paint work below. */
+    if ("IntersectionObserver" in window) {
+      var heroObserver = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting && !document.hidden) start();
+            else stop();
+          });
+        },
+        { threshold: 0 }
+      );
+      heroObserver.observe(document.querySelector(".hero"));
+    } else {
+      start();
+    }
 
     document.addEventListener("visibilitychange", function () {
-      if (document.hidden) cancelAnimationFrame(rafId);
-      else tick();
+      if (document.hidden) stop();
+      else if (document.querySelector(".hero").getBoundingClientRect().bottom > 0) start();
     });
   })();
 
@@ -167,7 +191,7 @@
           }
         });
       },
-      { threshold: 0.1, rootMargin: "0px 0px -8% 0px" }
+      { threshold: 0, rootMargin: "0px 0px 300px 0px" }
     );
     elements.forEach(function (el) { observer.observe(el); });
   })();

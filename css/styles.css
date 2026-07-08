@@ -939,17 +939,17 @@ section[id], article[id] {
    Scroll reveal (IntersectionObserver-driven, see main.js)
    ========================================================================== */
 .reveal, .reveal-up, .service-card, .testimonial-card {
-  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+  transition: opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out);
 }
 .js-ready .reveal,
 .js-ready .service-card,
 .js-ready .testimonial-card {
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(18px);
 }
 .js-ready .reveal-up {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(12px);
 }
 .js-ready .reveal.is-visible,
 .js-ready .reveal-up.is-visible,
