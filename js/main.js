@@ -142,13 +142,84 @@
     });
   })();
 
-  /* ---------------- GSAP-powered motion ---------------- */
-  if (window.gsap) {
-    gsap.registerPlugin(ScrollTrigger);
+  /* ---------------- Scroll reveal (IntersectionObserver-based) ----------------
+     Deliberately independent of GSAP/ScrollTrigger: ScrollTrigger positions are
+     computed once and go stale if fonts/images/video shift the layout after
+     that calculation, which can leave content stuck invisible until a refresh.
+     IntersectionObserver re-checks against the live layout on every scroll, so
+     it can't go stale the same way. */
+  (function setupReveal() {
+    var elements = document.querySelectorAll(
+      ".reveal, .reveal-up, .service-card, .testimonial-card"
+    );
 
-    if (prefersReducedMotion) {
-      gsap.set(".reveal, .reveal-up, .line", { opacity: 1, y: 0 });
-    } else {
+    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+      elements.forEach(function (el) { el.classList.add("is-visible"); });
+      return;
+    }
+
+    var observer = new IntersectionObserver(
+      function (entries, obs) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            obs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -8% 0px" }
+    );
+    elements.forEach(function (el) { observer.observe(el); });
+  })();
+
+  /* ---------------- Stat counters (IntersectionObserver-based) ---------------- */
+  (function setupStatCounters() {
+    var stats = document.querySelectorAll(".stat");
+
+    function runCounter(stat) {
+      var numEl = stat.querySelector(".stat-num");
+      var target = parseInt(stat.getAttribute("data-count"), 10);
+      var suffix = stat.getAttribute("data-suffix") || "";
+
+      if (prefersReducedMotion || !window.gsap) {
+        numEl.textContent = target.toLocaleString() + suffix;
+        return;
+      }
+      var counter = { val: 0 };
+      gsap.to(counter, {
+        val: target,
+        duration: 1.6,
+        ease: "power1.out",
+        onUpdate: function () {
+          numEl.textContent = Math.round(counter.val).toLocaleString() + suffix;
+        }
+      });
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      stats.forEach(runCounter);
+      return;
+    }
+    var observer = new IntersectionObserver(
+      function (entries, obs) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            runCounter(entry.target);
+            obs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    stats.forEach(function (stat) { observer.observe(stat); });
+  })();
+
+  /* ---------------- GSAP decorative motion (load-time + continuous, no one-time
+     scroll triggers here — those live in setupReveal/setupStatCounters above) ---------------- */
+  if (window.gsap && !prefersReducedMotion) {
+    try {
+      if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+
       /* Hero headline: line-by-line reveal on load */
       gsap.from("[data-line]", {
         yPercent: 110,
@@ -158,77 +229,24 @@
         delay: 0.2
       });
 
-      gsap.from(".hero-actions, .hero-sub, .hero-trust, .hero .eyebrow", {
-        opacity: 0,
-        y: 16,
-        duration: 0.7,
-        ease: "power2.out",
-        stagger: 0.1,
-        delay: 0.5
-      });
-
-      /* Generic scroll reveal for sections */
-      gsap.utils.toArray(".reveal").forEach(function (el, i) {
-        gsap.from(el, {
-          opacity: 0,
-          y: 28,
-          duration: 0.6,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: el,
-            start: "top 88%",
-            toggleActions: "play none none reverse"
-          }
-        });
-      });
-
-      /* Service cards stagger together as a group */
-      gsap.from(".service-card", {
-        opacity: 0,
-        y: 40,
-        duration: 0.7,
-        ease: "power2.out",
-        stagger: 0.15,
-        scrollTrigger: {
-          trigger: ".service-grid",
-          start: "top 82%"
-        }
-      });
-
-      /* Testimonial cards stagger */
-      gsap.from(".testimonial-card", {
-        opacity: 0,
-        y: 24,
-        duration: 0.5,
-        ease: "power2.out",
-        stagger: 0.1,
-        scrollTrigger: {
-          trigger: ".testimonial-grid",
-          start: "top 85%"
-        }
-      });
-
       /* Subtle hero background parallax */
-      gsap.to(".hero-plates", {
-        yPercent: 12,
-        ease: "none",
-        scrollTrigger: {
-          trigger: ".hero",
-          start: "top top",
-          end: "bottom top",
-          scrub: 0.6
-        }
-      });
-      gsap.to(".hero-glow", {
-        yPercent: 20,
-        ease: "none",
-        scrollTrigger: {
-          trigger: ".hero",
-          start: "top top",
-          end: "bottom top",
-          scrub: 0.6
-        }
-      });
+      if (window.ScrollTrigger) {
+        gsap.to(".hero-plates", {
+          yPercent: 12,
+          ease: "none",
+          scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 0.6 }
+        });
+        gsap.to(".hero-glow", {
+          yPercent: 20,
+          ease: "none",
+          scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 0.6 }
+        });
+        window.addEventListener("load", function () {
+          document.fonts && document.fonts.ready
+            ? document.fonts.ready.then(function () { ScrollTrigger.refresh(); })
+            : ScrollTrigger.refresh();
+        });
+      }
 
       /* Slow "breathing" pulse on the bodywork icon — evokes calm/recovery */
       gsap.to(".service-card--bodywork .service-icon", {
@@ -239,7 +257,7 @@
         yoyo: true
       });
 
-      /* Portrait ring slow rotation already handled via CSS; add gentle float */
+      /* Gentle float on the About portrait */
       gsap.to(".about-portrait", {
         y: -10,
         duration: 3,
@@ -247,51 +265,9 @@
         repeat: -1,
         yoyo: true
       });
+    } catch (e) {
+      /* Decorative motion failed (e.g. ScrollTrigger blocked) — core content
+         visibility never depends on this block, so nothing else to do. */
     }
-
-    /* Stat counters — count up once when scrolled into view */
-    gsap.utils.toArray(".stat").forEach(function (stat) {
-      var numEl = stat.querySelector(".stat-num");
-      var target = parseInt(stat.getAttribute("data-count"), 10);
-      var suffix = stat.getAttribute("data-suffix") || "";
-      var counter = { val: 0 };
-
-      ScrollTrigger.create({
-        trigger: stat,
-        start: "top 90%",
-        once: true,
-        onEnter: function () {
-          gsap.to(counter, {
-            val: target,
-            duration: prefersReducedMotion ? 0.01 : 1.6,
-            ease: "power1.out",
-            onUpdate: function () {
-              numEl.textContent = Math.round(counter.val).toLocaleString() + suffix;
-            }
-          });
-        }
-      });
-    });
-  } else {
-    /* GSAP failed to load (offline/CDN blocked) — ensure content is visible */
-    document.querySelectorAll(".reveal, .reveal-up, .line").forEach(function (el) {
-      el.style.opacity = "1";
-    });
-    document.querySelectorAll(".stat-num").forEach(function (el) {
-      var stat = el.closest(".stat");
-      el.textContent = stat.getAttribute("data-count") + (stat.getAttribute("data-suffix") || "");
-    });
   }
-
-  /* ---------------- Safety net: never leave content permanently invisible ---------------- */
-  window.addEventListener("load", function () {
-    setTimeout(function () {
-      document.querySelectorAll(".reveal, .reveal-up, .line").forEach(function (el) {
-        if (parseFloat(getComputedStyle(el).opacity) === 0) {
-          el.style.opacity = "1";
-          el.style.transform = "none";
-        }
-      });
-    }, 2500);
-  });
 })();

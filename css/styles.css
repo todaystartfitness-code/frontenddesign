@@ -936,11 +936,28 @@ section[id], article[id] {
 }
 
 /* ==========================================================================
-   Reveal animation fallback (no-JS / pre-hydration)
+   Scroll reveal (IntersectionObserver-driven, see main.js)
    ========================================================================== */
-.reveal, .reveal-up { opacity: 1; }
-.js-ready .reveal { opacity: 0; }
-.js-ready .reveal-up { opacity: 0; }
+.reveal, .reveal-up, .service-card, .testimonial-card {
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+}
+.js-ready .reveal,
+.js-ready .service-card,
+.js-ready .testimonial-card {
+  opacity: 0;
+  transform: translateY(28px);
+}
+.js-ready .reveal-up {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.js-ready .reveal.is-visible,
+.js-ready .reveal-up.is-visible,
+.js-ready .service-card.is-visible,
+.js-ready .testimonial-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 /* ==========================================================================
    Mobile nav
