@@ -196,29 +196,48 @@
 
   <!-- ============ STUDIO ============ -->
   <section class="studio" id="studio">
-    <div class="wrap studio-grid">
-      <div class="studio-video reveal">
-        <video
-          id="studio-video"
-          poster="assets/video/gym-tour-poster.jpg"
-          muted loop playsinline preload="metadata"
-          aria-label="Walkthrough of the Fit Strong Club training studio in Phoenix">
-          <source src="assets/video/gym-tour.mp4" type="video/mp4">
-        </video>
-        <button class="video-toggle" id="video-toggle" aria-label="Pause studio video" aria-pressed="false">
-          <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4l14 8-14 8V4z" fill="currentColor"/></svg>
-          <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18"><rect x="5" y="4" width="5" height="16" fill="currentColor"/><rect x="14" y="4" width="5" height="16" fill="currentColor"/></svg>
-        </button>
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">The Space &amp; The Work</p>
+        <h2>Train where it's <span class="accent-underline">built for it.</span></h2>
+        <p class="section-lede">
+          Barbells, plates, and a full strength rig on real training turf &mdash; no
+          treadmill rows, no mirrors-and-machines box gym. This is where the actual
+          work happens: progressive loading, heavy pulls, and the reps that build
+          real strength.
+        </p>
       </div>
 
-      <div class="studio-copy reveal">
-        <p class="eyebrow">The Space</p>
-        <h2>Train where it's <span class="accent-underline">built for it.</span></h2>
-        <p>
-          Barbells, plates, and a full strength rig on real training turf &mdash; no
-          treadmill rows, no mirrors-and-machines box gym. Fit Strong Club is set up
-          the way Rico actually coaches: bar work, progressive loading, and room to move.
-        </p>
+      <div class="video-row">
+        <figure class="video-card reveal">
+          <video
+            id="video-tour" class="ambient-video"
+            poster="assets/video/gym-tour-poster.jpg"
+            muted loop playsinline preload="metadata"
+            aria-label="Walkthrough of the Fit Strong Club training studio in Phoenix">
+            <source src="assets/video/gym-tour.mp4" type="video/mp4">
+          </video>
+          <button class="video-toggle" data-video="video-tour" aria-label="Pause video" aria-pressed="false">
+            <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4l14 8-14 8V4z" fill="currentColor"/></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18"><rect x="5" y="4" width="5" height="16" fill="currentColor"/><rect x="14" y="4" width="5" height="16" fill="currentColor"/></svg>
+          </button>
+          <figcaption>The Studio</figcaption>
+        </figure>
+
+        <figure class="video-card reveal">
+          <video
+            id="video-lift" class="ambient-video"
+            poster="assets/video/deadlift-455-poster.jpg"
+            muted loop playsinline preload="metadata"
+            aria-label="Rico Armstrong performing a 455 pound deadlift">
+            <source src="assets/video/deadlift-455.mp4" type="video/mp4">
+          </video>
+          <button class="video-toggle" data-video="video-lift" aria-label="Pause video" aria-pressed="false">
+            <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4l14 8-14 8V4z" fill="currentColor"/></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18"><rect x="5" y="4" width="5" height="16" fill="currentColor"/><rect x="14" y="4" width="5" height="16" fill="currentColor"/></svg>
+          </button>
+          <figcaption>455lb Deadlift</figcaption>
+        </figure>
       </div>
     </div>
   </section>
@@ -236,12 +255,19 @@
           releasing exactly what heavy training tightens up.
         </p>
       </div>
-      <div class="recovery-hero reveal">
-        <img
-          src="assets/images/bodywork/bodywork-pain-in-bum.jpg"
-          alt="Rico Armstrong performing an assisted Thai bodywork stretch on a client, overlooking downtown Phoenix from a rooftop studio"
-          loading="lazy" width="1200" height="1600">
-      </div>
+      <figure class="video-card recovery-hero reveal">
+        <video
+          id="video-bodywork" class="ambient-video"
+          poster="assets/video/pain-in-bum-poster.jpg"
+          muted loop playsinline preload="metadata"
+          aria-label="Rico Armstrong performing an assisted Thai bodywork stretch on a client, overlooking downtown Phoenix from a rooftop studio">
+          <source src="assets/video/pain-in-bum.mp4" type="video/mp4">
+        </video>
+        <button class="video-toggle" data-video="video-bodywork" aria-label="Pause video" aria-pressed="false">
+          <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4l14 8-14 8V4z" fill="currentColor"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18"><rect x="5" y="4" width="5" height="16" fill="currentColor"/><rect x="14" y="4" width="5" height="16" fill="currentColor"/></svg>
+        </button>
+      </figure>
     </div>
 
     <div class="wrap recovery-gallery">

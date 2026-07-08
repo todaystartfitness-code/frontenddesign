@@ -28,23 +28,19 @@
     });
   });
 
-  /* ---------------- Studio video ---------------- */
-  (function studioVideo() {
-    var video = document.getElementById("studio-video");
-    var toggle = document.getElementById("video-toggle");
-    if (!video || !toggle) return;
-
+  /* ---------------- Ambient videos (studio, lift, bodywork) ---------------- */
+  function setupAmbientVideo(video, toggle) {
     var userPaused = false;
 
     function play() {
       video.play().catch(function () {});
       toggle.setAttribute("aria-pressed", "false");
-      toggle.setAttribute("aria-label", "Pause studio video");
+      toggle.setAttribute("aria-label", "Pause video");
     }
     function pause() {
       video.pause();
       toggle.setAttribute("aria-pressed", "true");
-      toggle.setAttribute("aria-label", "Play studio video");
+      toggle.setAttribute("aria-label", "Play video");
     }
 
     toggle.addEventListener("click", function () {
@@ -74,7 +70,12 @@
     } else {
       play();
     }
-  })();
+  }
+
+  document.querySelectorAll(".video-toggle[data-video]").forEach(function (toggle) {
+    var video = document.getElementById(toggle.getAttribute("data-video"));
+    if (video) setupAmbientVideo(video, toggle);
+  });
 
   /* ---------------- Dust particle canvas (hero ambiance) ---------------- */
   (function dustField() {

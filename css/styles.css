@@ -560,17 +560,18 @@ section[id], article[id] {
    ========================================================================== */
 .studio { padding: var(--space-7) 0; }
 
-.studio-grid {
+.video-row {
   display: grid;
-  grid-template-columns: minmax(0, 360px) 1fr;
-  gap: var(--space-6);
-  align-items: center;
+  grid-template-columns: repeat(2, minmax(0, 300px));
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
 }
-@media (max-width: 860px) {
-  .studio-grid { grid-template-columns: 1fr; gap: var(--space-4); }
+@media (max-width: 640px) {
+  .video-row { grid-template-columns: minmax(0, 300px); }
 }
 
-.studio-video {
+.video-card {
   position: relative;
   width: 100%;
   max-width: 360px;
@@ -582,11 +583,23 @@ section[id], article[id] {
   border: 1px solid var(--border);
   box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
 }
-.studio-video video {
+.video-card video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+.video-card figcaption {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: var(--space-3) var(--space-2) var(--space-2);
+  background: linear-gradient(180deg, transparent, rgba(22, 18, 15, 0.75));
+  text-align: center;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.82rem;
+  color: var(--ink);
 }
 
 .video-toggle {
@@ -611,9 +624,6 @@ section[id], article[id] {
 .video-toggle[aria-pressed="true"] .icon-play { display: block; }
 .video-toggle[aria-pressed="true"] .icon-pause { display: none; }
 
-.studio-copy h2 { margin-bottom: var(--space-3); }
-.studio-copy p { max-width: 48ch; }
-
 /* ==========================================================================
    Recovery
    ========================================================================== */
@@ -621,7 +631,7 @@ section[id], article[id] {
 
 .recovery-intro {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 360px;
   gap: var(--space-6);
   align-items: center;
   margin-bottom: var(--space-5);
@@ -632,23 +642,6 @@ section[id], article[id] {
 
 .recovery-copy h2 { margin-bottom: var(--space-3); }
 .recovery-copy p { max-width: 50ch; }
-
-.recovery-hero {
-  width: 100%;
-  max-width: 380px;
-  aspect-ratio: 3 / 4;
-  margin: 0 auto;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
-}
-.recovery-hero img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
 
 .recovery-gallery {
   display: grid;
