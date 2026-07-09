@@ -28,6 +28,28 @@
     });
   });
 
+  /* ---------------- Magnetic buttons (primary CTAs, fine-pointer only) ---------------- */
+  if (!prefersReducedMotion && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    var MAGNET_STRENGTH = 0.25;
+    var MAGNET_MAX = 10;
+    document.querySelectorAll(".btn-primary:not(.btn-sm)").forEach(function (btn) {
+      btn.classList.add("is-magnetic");
+      btn.addEventListener("mousemove", function (e) {
+        var rect = btn.getBoundingClientRect();
+        var x = e.clientX - rect.left - rect.width / 2;
+        var y = e.clientY - rect.top - rect.height / 2;
+        var tx = Math.max(-MAGNET_MAX, Math.min(MAGNET_MAX, x * MAGNET_STRENGTH));
+        var ty = Math.max(-MAGNET_MAX, Math.min(MAGNET_MAX, y * MAGNET_STRENGTH));
+        btn.classList.remove("is-settling");
+        btn.style.transform = "translate(" + tx + "px, " + ty + "px)";
+      });
+      btn.addEventListener("mouseleave", function () {
+        btn.classList.add("is-settling");
+        btn.style.transform = "";
+      });
+    });
+  }
+
   /* ---------------- Ambient videos (studio, lift, bodywork) ---------------- */
   function setupAmbientVideo(video, toggle) {
     var userPaused = false;
@@ -166,6 +188,26 @@
     });
   })();
 
+  /* ---------------- Shared count-up helper ---------------- */
+  function countUpNumber(numEl, target, opts) {
+    opts = opts || {};
+    var prefix = opts.prefix || "";
+    var suffix = opts.suffix || "";
+    if (prefersReducedMotion || !window.gsap) {
+      numEl.textContent = prefix + target.toLocaleString() + suffix;
+      return;
+    }
+    var counter = { val: 0 };
+    gsap.to(counter, {
+      val: target,
+      duration: opts.duration || 1.6,
+      ease: "power1.out",
+      onUpdate: function () {
+        numEl.textContent = prefix + Math.round(counter.val).toLocaleString() + suffix;
+      }
+    });
+  }
+
   /* ---------------- Scroll reveal (IntersectionObserver-based) ----------------
      Deliberately independent of GSAP/ScrollTrigger: ScrollTrigger positions are
      computed once and go stale if fonts/images/video shift the layout after
@@ -182,11 +224,20 @@
       return;
     }
 
+    /* Zero out prices now (while their card is still invisible) so the
+       count-up has somewhere to animate from; safe because the card's
+       opacity is 0 until "is-visible" lands, so this is never seen. */
+    document.querySelectorAll(".price-now[data-value]").forEach(function (el) {
+      el.textContent = "$0";
+    });
+
     var observer = new IntersectionObserver(
       function (entries, obs) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
             entry.target.classList.add("is-visible");
+            var priceEl = entry.target.querySelector(".price-now[data-value]");
+            if (priceEl) countUpNumber(priceEl, parseInt(priceEl.getAttribute("data-value"), 10), { prefix: "$", duration: 1.1 });
             obs.unobserve(entry.target);
           }
         });
@@ -204,20 +255,7 @@
       var numEl = stat.querySelector(".stat-num");
       var target = parseInt(stat.getAttribute("data-count"), 10);
       var suffix = stat.getAttribute("data-suffix") || "";
-
-      if (prefersReducedMotion || !window.gsap) {
-        numEl.textContent = target.toLocaleString() + suffix;
-        return;
-      }
-      var counter = { val: 0 };
-      gsap.to(counter, {
-        val: target,
-        duration: 1.6,
-        ease: "power1.out",
-        onUpdate: function () {
-          numEl.textContent = Math.round(counter.val).toLocaleString() + suffix;
-        }
-      });
+      countUpNumber(numEl, target, { suffix: suffix });
     }
 
     if (!("IntersectionObserver" in window)) {
