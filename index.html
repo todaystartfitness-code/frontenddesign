@@ -76,7 +76,10 @@
       </p>
 
       <div class="hero-actions reveal-up" data-anim="fade">
-        <a href="#services" class="btn btn-primary">Claim 3 Sessions for $57</a>
+        <a href="#book" class="btn btn-primary"
+          data-cal-link="fitstrongclub/personal-training-demo-session-and-consultation"
+          data-cal-namespace="personal-training-demo-session-and-consultation"
+          data-cal-config='{"layout":""}'>Claim 3 Sessions for $57</a>
         <a href="#about" class="btn btn-ghost">Meet Rico</a>
       </div>
 
@@ -646,19 +649,13 @@
       <p class="section-lede reveal">First 3 strength sessions are $57 total (normally $300). Thai bodywork is $120 per 75 minutes.</p>
 
       <div class="booking-embed reveal">
-        <!--
-          Arketa booking embed goes here.
-          Replace this placeholder block with your Arketa embed snippet, e.g.:
-          <iframe src="https://YOUR-ARKETA-BOOKING-URL" title="Fit Strong Club booking" loading="lazy"></iframe>
-        -->
-        <div class="booking-placeholder">
-          <span class="booking-placeholder-icon" aria-hidden="true">
-            <svg viewBox="0 0 48 48" width="32" height="32"><rect x="6" y="10" width="36" height="32" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/><line x1="6" y1="18" x2="42" y2="18" stroke="currentColor" stroke-width="2.5"/><line x1="15" y1="6" x2="15" y2="14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="33" y1="6" x2="33" y2="14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-          </span>
-          <p>Online booking powered by <strong>Arketa</strong> is being set up.</p>
-          <p class="booking-placeholder-sub">In the meantime, message us on Instagram to reserve your spot.</p>
-          <a class="btn btn-primary" href="https://instagram.com/FitStrongClub" target="_blank" rel="noopener">Message @FitStrongClub</a>
+        <div class="booking-frame">
+          <div id="my-lunacal-inline-personal-training-demo-session-and-consultation" class="booking-frame-inner"></div>
         </div>
+        <p class="booking-fallback-note">
+          Having trouble with the calendar? Message us on Instagram instead &mdash;
+          <a href="https://instagram.com/FitStrongClub" target="_blank" rel="noopener">@FitStrongClub</a>.
+        </p>
       </div>
     </div>
   </section>
@@ -697,5 +694,75 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="js/main.js"></script>
+
+<!-- Lunacal booking embed: popup on the hero CTA, inline calendar in the Book section -->
+<script type="text/javascript">
+  (function(L,U,N){let p=(a,ar)=>a.q.push(ar),d=L.document;L.Lunacal=L.Lunacal||function(){let lun=L.Lunacal,ar=arguments;if(!lun.loaded){lun.ns={};lun.q=lun.q||[];d.head.appendChild(d.createElement("script")).src=U;lun.loaded=!0}if(ar[0]===N){const api=function(){p(api,arguments)};const ns=ar[1];api.q=api.q||[];if(typeof ns==="string"){lun.ns[ns]=lun.ns[ns]||api;p(lun.ns[ns],ar);p(lun,["initNamespace",ns])}else p(lun,ar);return}p(lun,ar)};if(!L.Cal)L.Cal=L.Lunacal})(window,"https://app.lunacal.ai/embed/embed.js","init");
+  Lunacal("init","personal-training-demo-session-and-consultation",{origin:"https://app.lunacal.ai"});
+  Lunacal.config = Lunacal.config || {};
+  Lunacal.config.forwardQueryParams = true;
+
+  Lunacal.ns["personal-training-demo-session-and-consultation"]("preload", { calLink: "fitstrongclub/personal-training-demo-session-and-consultation", type: "modal", options: { prerenderIframe: true } });
+  Lunacal.ns["personal-training-demo-session-and-consultation"]("preload", { calLink: "fitstrongclub/personal-training-demo-session-and-consultation", type: "inline", options: { prerenderIframe: true } });
+  Lunacal.ns["personal-training-demo-session-and-consultation"]("inline", {
+    elementOrSelector: "#my-lunacal-inline-personal-training-demo-session-and-consultation",
+    config: { layout: "" },
+    calLink: "fitstrongclub/personal-training-demo-session-and-consultation"
+  });
+
+  /* Theme colors mapped to Fit Strong Club's own palette/type (rust/paper/Geist)
+     instead of Lunacal's default red-and-Poppins preset. */
+  Lunacal.ns["personal-training-demo-session-and-consultation"]("ui", {
+    theme: "dark",
+    styles: { branding: {} },
+    hideEventTypeDetails: false,
+    layout: "",
+    cssVarsPerTheme: {
+      light: {
+        "theme-border": "rgba(28, 23, 18, 0.2)",
+        "theme-background-primary": "#c2542e",
+        "theme-background-secondary": "#e6dfcf",
+        "theme-background-card": "#efe9dd",
+        "theme-background-base": "#efe9dd",
+        "theme-text-primary": "#ffffff",
+        "theme-text-secondary": "#9c4324",
+        "theme-text-card": "#1c1712",
+        "theme-text-base": "#1c1712",
+        "theme-rounded-base": "14px",
+        "theme-rounded-calendar": "28px",
+        "theme-rounded-timeslot": "8px",
+        "theme-rounded-day": "6px",
+        "theme-rounded-button": "6px",
+        "theme-shadow-calendar": "2px 2px 4px 0px #0000001A",
+        "theme-shadow-button": "2px 2px 4px 0px #0000001A",
+        "theme-shadow-timeslot": "0px 0px 0px 0px #000000",
+        "theme-font-family": "Geist"
+      },
+      dark: {
+        "theme-border": "rgba(244, 235, 221, 0.18)",
+        "theme-background-primary": "#c2542e",
+        "theme-background-secondary": "#2c241c",
+        "theme-background-base": "#16120f",
+        "theme-background-card": "#241d17",
+        "theme-text-primary": "#ffffff",
+        "theme-text-secondary": "#d97a4e",
+        "theme-text-card": "#f4ebdd",
+        "theme-text-base": "#f4ebdd",
+        "theme-rounded-base": "14px",
+        "theme-rounded-calendar": "28px",
+        "theme-rounded-timeslot": "8px",
+        "theme-rounded-day": "6px",
+        "theme-rounded-button": "6px",
+        "theme-shadow-calendar": "2px 2px 4px 0px #0000001A",
+        "theme-shadow-button": "2px 2px 4px 0px #0000001A",
+        "theme-shadow-timeslot": "0px 0px 0px 0px #000000",
+        "theme-font-family": "Geist"
+      }
+    },
+    displayedContent: { image: true, name: true, designation: true, description: true, eventName: true, highlightBar: false },
+    background: null,
+    stylePreset: null
+  });
+</script>
 </body>
 </html>
