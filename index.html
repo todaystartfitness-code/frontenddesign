@@ -32,6 +32,7 @@
       <a href="#training">Training</a>
       <a href="#bodywork">Bodywork</a>
       <a href="#about">About Rico</a>
+      <a href="#results">Results</a>
       <a href="#location">Location</a>
     </nav>
 
@@ -293,23 +294,8 @@
         </p>
       </div>
 
-      <div class="video-row">
-        <figure class="video-card reveal">
-          <video
-            id="video-bodywork" class="ambient-video"
-            poster="assets/video/pain-in-bum-poster.jpg"
-            muted loop playsinline preload="metadata"
-            aria-label="Rico Armstrong performing an assisted Thai bodywork stretch on a client, overlooking downtown Phoenix from a rooftop studio">
-            <source src="assets/video/pain-in-bum.mp4" type="video/mp4">
-          </video>
-          <button class="video-toggle" data-video="video-bodywork" aria-label="Pause video" aria-pressed="false">
-            <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4l14 8-14 8V4z" fill="currentColor"/></svg>
-            <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18"><rect x="5" y="4" width="5" height="16" fill="currentColor"/><rect x="14" y="4" width="5" height="16" fill="currentColor"/></svg>
-          </button>
-          <figcaption>Assisted Stretching</figcaption>
-        </figure>
-
-        <figure class="video-card reveal">
+      <div class="video-row video-row--single">
+        <figure class="video-card video-card--large reveal">
           <video
             id="video-recovery-compilation" class="ambient-video"
             poster="assets/video/recovery-compilation-poster.jpg"
@@ -351,14 +337,17 @@
   <!-- ============ ABOUT ============ -->
   <section class="about" id="about">
     <div class="wrap about-grid">
-      <div class="about-portrait reveal" aria-hidden="false">
-        <div class="portrait-frame">
-          <span class="portrait-initials">RA</span>
-          <span class="portrait-note">Photo coming soon</span>
+      <div class="about-portrait reveal">
+        <div class="compare-card">
+          <figure class="compare-half">
+            <img src="assets/images/about/rico-before.jpg" alt="Rico Armstrong before he began strength training" loading="lazy" width="650" height="960">
+            <span class="compare-label">Before</span>
+          </figure>
+          <figure class="compare-half">
+            <img src="assets/images/about/rico-after.jpg" alt="Rico Armstrong today, after years of strength training" loading="lazy" width="700" height="950">
+            <span class="compare-label">After</span>
+          </figure>
         </div>
-        <svg class="portrait-ring" viewBox="0 0 200 200" aria-hidden="true">
-          <circle cx="100" cy="100" r="94" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 8"/>
-        </svg>
       </div>
 
       <div class="about-copy reveal">
@@ -386,6 +375,207 @@
           <li>10 Years Coaching Experience</li>
           <li>7,000+ Classes Coached</li>
         </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="results" id="results">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <p class="eyebrow">Real Results</p>
+        <h2>Strength gains, <span class="accent-underline">on the record.</span></h2>
+        <p class="section-lede">
+          Starting numbers versus current numbers, straight from client programming &mdash;
+          no guesswork, just the weight on the bar.
+        </p>
+      </div>
+
+      <div class="result-grid">
+        <div class="result-card reveal">
+          <div class="result-card-head">
+            <span class="result-name">Megan M.</span>
+            <span class="result-tag">Halfway through her program</span>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row-head">
+              <span class="result-lift">Deadlift</span>
+              <span class="result-gain">+74%</span>
+            </div>
+            <div class="result-bars">
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Start</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--start" style="width:58%"></div></div>
+                <span class="result-bar-value">95 lbs</span>
+              </div>
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Now</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--current" style="width:100%"></div></div>
+                <span class="result-bar-value">165 lbs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row-head">
+              <span class="result-lift">Back Squat</span>
+              <span class="result-gain">+100%</span>
+            </div>
+            <div class="result-bars">
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Start</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--start" style="width:50%"></div></div>
+                <span class="result-bar-value">55 lbs</span>
+              </div>
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Now</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--current" style="width:100%"></div></div>
+                <span class="result-bar-value">110 lbs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row-head">
+              <span class="result-lift">Shoulder Press</span>
+              <span class="result-gain">+46%</span>
+            </div>
+            <div class="result-bars">
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Start</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--start" style="width:69%"></div></div>
+                <span class="result-bar-value">24 lbs</span>
+              </div>
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Now</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--current" style="width:100%"></div></div>
+                <span class="result-bar-value">35 lbs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row-head">
+              <span class="result-lift">Bench Press</span>
+              <span class="result-gain">+56%</span>
+            </div>
+            <div class="result-bars">
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Start</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--start" style="width:64%"></div></div>
+                <span class="result-bar-value">45 lbs</span>
+              </div>
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Now</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--current" style="width:100%"></div></div>
+                <span class="result-bar-value">70 lbs</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-card reveal">
+          <div class="result-card-head">
+            <span class="result-name">Connor K.</span>
+            <span class="result-tag">Incredible progress</span>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row-head">
+              <span class="result-lift">Deadlift</span>
+              <span class="result-gain">+90%</span>
+            </div>
+            <div class="result-bars">
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Start</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--start" style="width:53%"></div></div>
+                <span class="result-bar-value">105 lbs</span>
+              </div>
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Now</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--current" style="width:100%"></div></div>
+                <span class="result-bar-value">200 lbs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row-head">
+              <span class="result-lift">Back Squat</span>
+              <span class="result-gain">+138%</span>
+            </div>
+            <div class="result-bars">
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Start</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--start" style="width:42%"></div></div>
+                <span class="result-bar-value">65 lbs</span>
+              </div>
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Now</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--current" style="width:100%"></div></div>
+                <span class="result-bar-value">155 lbs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row-head">
+              <span class="result-lift">Shoulder Press</span>
+              <span class="result-gain">+44%</span>
+            </div>
+            <div class="result-bars">
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Start</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--start" style="width:69%"></div></div>
+                <span class="result-bar-value">45 lbs</span>
+              </div>
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Now</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--current" style="width:100%"></div></div>
+                <span class="result-bar-value">65 lbs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row-head">
+              <span class="result-lift">Bench Press</span>
+              <span class="result-gain">+13%</span>
+            </div>
+            <div class="result-bars">
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Start</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--start" style="width:88%"></div></div>
+                <span class="result-bar-value">75 lbs</span>
+              </div>
+              <div class="result-bar-line">
+                <span class="result-bar-tag">Now</span>
+                <div class="result-bar-track"><div class="result-bar-fill result-bar-fill--current" style="width:100%"></div></div>
+                <span class="result-bar-value">85 lbs</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="transform-block reveal">
+        <h3>Real transformations.</h3>
+        <div class="transform-grid">
+          <figure class="reveal">
+            <div class="compare-card">
+              <div class="compare-half">
+                <img src="assets/images/results/jane-before.jpg" alt="Jane before her strength training program, rear view" loading="lazy" width="520" height="1130">
+                <span class="compare-label">Before</span>
+              </div>
+              <div class="compare-half">
+                <img src="assets/images/results/jane-after.jpg" alt="Jane after her strength training program, rear view" loading="lazy" width="520" height="1130">
+                <span class="compare-label">After</span>
+              </div>
+            </div>
+            <figcaption class="compare-caption">Jane &middot; Client Transformation</figcaption>
+          </figure>
+        </div>
       </div>
     </div>
   </section>
@@ -489,6 +679,7 @@
       <a href="#training">Training</a>
       <a href="#bodywork">Bodywork</a>
       <a href="#about">About</a>
+      <a href="#results">Results</a>
       <a href="#location">Location</a>
       <a href="#book">Book Now</a>
     </nav>
