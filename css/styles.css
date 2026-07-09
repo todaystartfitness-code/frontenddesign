@@ -22,9 +22,9 @@
 
   --on-rust: #16120f;
 
-  --font-serif: "Fraunces", serif;
-  --font-display: "Barlow Condensed", sans-serif;
-  --font-body: "Barlow", sans-serif;
+  --font-headline: "Geist", sans-serif;
+  --font-mono: "Geist Mono", monospace;
+  --font-body: "Geist", sans-serif;
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   --space-1: 0.5rem;
@@ -94,7 +94,7 @@ address { font-style: normal; }
 button { font: inherit; color: inherit; background: none; border: 0; }
 
 h1, h2, h3 {
-  font-family: var(--font-serif);
+  font-family: var(--font-headline);
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.01em;
@@ -134,7 +134,7 @@ section[id], article[id] {
 }
 
 .eyebrow {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.16em;
   font-size: 0.8rem;
@@ -169,7 +169,7 @@ section[id], article[id] {
   align-items: center;
   justify-content: center;
   gap: 0.5em;
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -251,7 +251,7 @@ section[id], article[id] {
 }
 .brand-mark { color: var(--rust); display: inline-flex; }
 .brand-text {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   font-weight: 700;
   letter-spacing: 0.04em;
   font-size: clamp(0.92rem, 3.6vw, 1.15rem);
@@ -263,7 +263,7 @@ section[id], article[id] {
 .main-nav {
   display: flex;
   gap: var(--space-4);
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   text-transform: uppercase;
   font-size: 0.92rem;
   letter-spacing: 0.05em;
@@ -379,7 +379,7 @@ section[id], article[id] {
   color: var(--ink);
 }
 .hero-title .line { display: block; overflow: hidden; }
-.hero-title em { color: var(--rust-light); font-style: italic; font-weight: 600; }
+.hero-title em { color: var(--rust-light); font-style: normal; }
 
 .hero-sub {
   max-width: 42ch;
@@ -399,7 +399,7 @@ section[id], article[id] {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-size: 0.85rem;
@@ -450,7 +450,7 @@ section[id], article[id] {
 }
 .stat-num {
   display: block;
-  font-family: var(--font-serif);
+  font-family: var(--font-headline);
   font-size: clamp(2.4rem, 5vw, 3.6rem);
   font-weight: 700;
   color: var(--rust-light);
@@ -517,7 +517,7 @@ section[id], article[id] {
 
 .badge {
   display: inline-block;
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.72rem;
@@ -546,10 +546,10 @@ section[id], article[id] {
 }
 .price-offer { display: flex; align-items: baseline; gap: 0.6em; flex-wrap: wrap; }
 .price-now {
-  font-family: var(--font-serif);
+  font-family: var(--font-headline);
   font-size: 2.4rem;
   font-weight: 700;
-  font-variant-numeric: oldstyle-nums;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
   line-height: 1;
 }
@@ -626,7 +626,7 @@ section[id], article[id] {
   padding: var(--space-3) var(--space-2) var(--space-2);
   background: linear-gradient(180deg, transparent, rgba(22, 18, 15, 0.75));
   text-align: center;
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-size: 0.82rem;
@@ -710,7 +710,7 @@ section[id], article[id] {
 .recovery-gallery figcaption {
   padding: var(--space-2);
   text-align: center;
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-size: 0.82rem;
@@ -754,7 +754,7 @@ section[id], article[id] {
   box-shadow: inset 0 0 0 6px rgba(22,18,15,0.25), 0 20px 50px -18px rgba(196,85,46,0.55);
 }
 .portrait-initials {
-  font-family: var(--font-serif);
+  font-family: var(--font-headline);
   font-size: 4rem;
   font-weight: 600;
 }
@@ -776,14 +776,15 @@ section[id], article[id] {
 .about-copy h2 { margin-bottom: var(--space-3); }
 .about-copy p { max-width: 60ch; }
 .about-copy blockquote {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: clamp(1.6rem, 2.8vw, 2.3rem);
+  font-family: var(--font-headline);
+  font-style: normal;
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  letter-spacing: -0.01em;
   color: var(--amber);
   margin: var(--space-3) 0;
   padding-left: var(--space-3);
   border-left: 3px solid var(--rust);
-  font-weight: 400;
+  font-weight: 700;
 }
 
 .credentials {
@@ -795,7 +796,7 @@ section[id], article[id] {
   border-top: 1px solid var(--border);
 }
 .credentials li {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-size: 0.85rem;
@@ -830,13 +831,13 @@ section[id], article[id] {
   background: var(--surface-2);
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto var(--space-2);
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   font-size: 1.2rem;
   color: var(--ink-faint);
 }
 .testimonial-quote { font-style: italic; margin-bottom: var(--space-2); }
 .testimonial-name {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-size: 0.78rem;
@@ -864,7 +865,7 @@ section[id], article[id] {
 }
 
 .location-copy address {
-  font-family: var(--font-serif);
+  font-family: var(--font-headline);
   font-weight: 500;
   font-size: clamp(1.3rem, 2.2vw, 1.7rem);
   color: var(--ink);
@@ -949,7 +950,7 @@ section[id], article[id] {
   display: flex;
   gap: var(--space-3);
   flex-wrap: wrap;
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   text-transform: uppercase;
   font-size: 0.85rem;
   letter-spacing: 0.04em;
