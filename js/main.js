@@ -99,95 +99,6 @@
     if (video) setupAmbientVideo(video, toggle);
   });
 
-  /* ---------------- Dust particle canvas (hero ambiance) ---------------- */
-  (function dustField() {
-    var canvas = document.getElementById("dust-canvas");
-    if (!canvas || prefersReducedMotion) return;
-    var ctx = canvas.getContext("2d");
-    var particles = [];
-    var count = window.innerWidth < 640 ? 26 : 50;
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var w, h;
-
-    function resize() {
-      w = canvas.offsetWidth;
-      h = canvas.offsetHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    function makeParticle() {
-      return {
-        x: Math.random() * w,
-        y: Math.random() * h,
-        r: Math.random() * 1.6 + 0.4,
-        vy: -(Math.random() * 0.18 + 0.04),
-        vx: (Math.random() - 0.5) * 0.08,
-        a: Math.random() * 0.5 + 0.15
-      };
-    }
-
-    function init() {
-      resize();
-      particles = [];
-      for (var i = 0; i < count; i++) particles.push(makeParticle());
-    }
-
-    var rafId = null;
-    function frame() {
-      ctx.clearRect(0, 0, w, h);
-      particles.forEach(function (p) {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(219, 165, 76, " + p.a + ")";
-        ctx.fill();
-      });
-      rafId = requestAnimationFrame(frame);
-    }
-    function start() {
-      if (rafId === null) rafId = requestAnimationFrame(frame);
-    }
-    function stop() {
-      cancelAnimationFrame(rafId);
-      rafId = null;
-    }
-
-    var resizeTimer;
-    window.addEventListener("resize", function () {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(init, 200);
-    });
-
-    init();
-
-    /* Only run the animation loop while the hero is actually on screen —
-       otherwise this rAF loop keeps eating main-thread time for the rest
-       of the page's lifetime, competing with scroll/paint work below. */
-    if ("IntersectionObserver" in window) {
-      var heroObserver = new IntersectionObserver(
-        function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting && !document.hidden) start();
-            else stop();
-          });
-        },
-        { threshold: 0 }
-      );
-      heroObserver.observe(document.querySelector(".hero"));
-    } else {
-      start();
-    }
-
-    document.addEventListener("visibilitychange", function () {
-      if (document.hidden) stop();
-      else if (document.querySelector(".hero").getBoundingClientRect().bottom > 0) start();
-    });
-  })();
-
   /* ---------------- Shared count-up helper ---------------- */
   function countUpNumber(numEl, target, opts) {
     opts = opts || {};
@@ -291,18 +202,7 @@
         delay: 0.2
       });
 
-      /* Subtle hero background parallax */
       if (window.ScrollTrigger) {
-        gsap.to(".hero-plates", {
-          yPercent: 12,
-          ease: "none",
-          scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 0.6 }
-        });
-        gsap.to(".hero-glow", {
-          yPercent: 20,
-          ease: "none",
-          scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 0.6 }
-        });
         window.addEventListener("load", function () {
           document.fonts && document.fonts.ready
             ? document.fonts.ready.then(function () { ScrollTrigger.refresh(); })

@@ -330,45 +330,45 @@ section[id], article[id] {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(196, 85, 46, 0.18), transparent 60%),
-    linear-gradient(180deg, #1a1512 0%, #16120f 55%, #120e0b 100%);
+  overflow: hidden;
+  background: #16120f;
 }
 
-#dust-canvas {
-  position: absolute;
-  inset: 0;
+.hero-video {
   width: 100%;
   height: 100%;
-  opacity: 0.55;
+  object-fit: cover;
+  object-position: 70% center;
+  display: block;
 }
 
-.hero-glow {
+/* Pulls the footage's cool cinematic grade toward the site's warm rust/amber palette */
+.hero-grade {
   position: absolute;
-  left: 50%; top: 38%;
-  width: min(70vw, 900px);
-  height: min(70vw, 900px);
-  background: radial-gradient(circle, rgba(219, 165, 76, 0.14), transparent 65%);
-  transform: translate(-50%, -50%);
-  filter: blur(10px);
+  inset: 0;
+  background: linear-gradient(135deg, rgba(196, 85, 46, 0.35), rgba(219, 165, 76, 0.12) 45%, transparent 75%);
+  mix-blend-mode: overlay;
 }
 
-.hero-plates {
+.hero-scrim {
   position: absolute;
-  right: -10%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: min(60vw, 640px);
-  height: auto;
-  opacity: 0.5;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(22, 18, 15, 0.94) 0%, rgba(22, 18, 15, 0.8) 32%, rgba(22, 18, 15, 0.4) 60%, rgba(22, 18, 15, 0.55) 100%),
+    linear-gradient(180deg, rgba(22, 18, 15, 0.35) 0%, transparent 25%, transparent 70%, rgba(22, 18, 15, 0.75) 100%);
 }
-.plate {
-  fill: none;
-  stroke: var(--border-strong);
-  stroke-width: 1;
+
+.hero-video-toggle {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-4);
+  z-index: 2;
 }
-.plate-2 { stroke: rgba(196, 85, 46, 0.35); }
-.plate-3 { fill: rgba(196, 85, 46, 0.08); stroke: rgba(196, 85, 46, 0.4); }
+@media (max-width: 640px) {
+  /* Bottom of the hero is already crowded (trust list + scroll cue) on
+     small screens, so move the toggle up top where there's clear space. */
+  .hero-video-toggle { top: 4.4rem; bottom: auto; }
+}
 
 .hero-inner { position: relative; }
 
