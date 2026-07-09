@@ -112,7 +112,7 @@
   </section>
 
   <!-- ============ SERVICES ============ -->
-  <section class="services" id="services">
+  <section class="services section--paper" id="services">
     <div class="wrap">
       <div class="section-head reveal">
         <p class="eyebrow">What We Do</p>
@@ -199,6 +199,24 @@
     </div>
   </section>
 
+  <!-- ============ MARQUEE: TRAINING ============ -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+      <span>Personal Training<i></i></span>
+    </div>
+  </div>
+
   <!-- ============ STUDIO ============ -->
   <section class="studio" id="studio">
     <div class="wrap">
@@ -247,32 +265,65 @@
     </div>
   </section>
 
+  <!-- ============ MARQUEE: RECOVERY ============ -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Thai Bodywork Recovery<i></i></span>
+      <span>Thai Bodywork Recovery<i></i></span>
+      <span>Thai Bodywork Recovery<i></i></span>
+      <span>Thai Bodywork Recovery<i></i></span>
+      <span>Thai Bodywork Recovery<i></i></span>
+      <span>Thai Bodywork Recovery<i></i></span>
+      <span>Thai Bodywork Recovery<i></i></span>
+      <span>Thai Bodywork Recovery<i></i></span>
+    </div>
+  </div>
+
   <!-- ============ RECOVERY ============ -->
   <section class="recovery" id="recovery">
-    <div class="wrap recovery-intro">
-      <div class="recovery-copy reveal">
+    <div class="wrap">
+      <div class="section-head reveal">
         <p class="eyebrow">The Recovery Space</p>
         <h2>Recover somewhere <span class="accent-underline">that feels like it.</span></h2>
-        <p>
+        <p class="section-lede">
           Thai bodywork sessions happen in a bright, open studio above downtown Phoenix &mdash;
           not a treatment room in the back of a gym. Rico works through named, repeatable
           techniques &mdash; Kneel &amp; Pray, Trap Peddle, Tricep Stretch &mdash; built for
-          releasing exactly what heavy training tightens up.
+          releasing exactly what heavy training tightens up, for every body that walks in.
         </p>
       </div>
-      <figure class="video-card recovery-hero reveal">
-        <video
-          id="video-bodywork" class="ambient-video"
-          poster="assets/video/pain-in-bum-poster.jpg"
-          muted loop playsinline preload="metadata"
-          aria-label="Rico Armstrong performing an assisted Thai bodywork stretch on a client, overlooking downtown Phoenix from a rooftop studio">
-          <source src="assets/video/pain-in-bum.mp4" type="video/mp4">
-        </video>
-        <button class="video-toggle" data-video="video-bodywork" aria-label="Pause video" aria-pressed="false">
-          <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4l14 8-14 8V4z" fill="currentColor"/></svg>
-          <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18"><rect x="5" y="4" width="5" height="16" fill="currentColor"/><rect x="14" y="4" width="5" height="16" fill="currentColor"/></svg>
-        </button>
-      </figure>
+
+      <div class="video-row">
+        <figure class="video-card reveal">
+          <video
+            id="video-bodywork" class="ambient-video"
+            poster="assets/video/pain-in-bum-poster.jpg"
+            muted loop playsinline preload="metadata"
+            aria-label="Rico Armstrong performing an assisted Thai bodywork stretch on a client, overlooking downtown Phoenix from a rooftop studio">
+            <source src="assets/video/pain-in-bum.mp4" type="video/mp4">
+          </video>
+          <button class="video-toggle" data-video="video-bodywork" aria-label="Pause video" aria-pressed="false">
+            <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4l14 8-14 8V4z" fill="currentColor"/></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18"><rect x="5" y="4" width="5" height="16" fill="currentColor"/><rect x="14" y="4" width="5" height="16" fill="currentColor"/></svg>
+          </button>
+          <figcaption>Assisted Stretching</figcaption>
+        </figure>
+
+        <figure class="video-card reveal">
+          <video
+            id="video-recovery-compilation" class="ambient-video"
+            poster="assets/video/recovery-compilation-poster.jpg"
+            muted loop playsinline preload="metadata"
+            aria-label="Rico Armstrong providing Thai bodywork sessions to a range of clients across multiple studio settings">
+            <source src="assets/video/recovery-compilation.mp4" type="video/mp4">
+          </video>
+          <button class="video-toggle" data-video="video-recovery-compilation" aria-label="Pause video" aria-pressed="false">
+            <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4l14 8-14 8V4z" fill="currentColor"/></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18"><rect x="5" y="4" width="5" height="16" fill="currentColor"/><rect x="14" y="4" width="5" height="16" fill="currentColor"/></svg>
+          </button>
+          <figcaption>Real Sessions</figcaption>
+        </figure>
+      </div>
     </div>
 
     <div class="wrap recovery-gallery">
@@ -340,7 +391,7 @@
   </section>
 
   <!-- ============ TESTIMONIALS ============ -->
-  <section class="testimonials" id="testimonials">
+  <section class="testimonials section--paper" id="testimonials">
     <div class="wrap">
       <div class="section-head reveal">
         <p class="eyebrow">Results</p>
@@ -368,7 +419,7 @@
   </section>
 
   <!-- ============ LOCATION ============ -->
-  <section class="location" id="location">
+  <section class="location section--paper" id="location">
     <div class="wrap location-grid">
       <div class="location-copy reveal">
         <p class="eyebrow">Visit The Studio</p>

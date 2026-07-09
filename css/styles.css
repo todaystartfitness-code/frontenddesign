@@ -22,6 +22,18 @@
 
   --on-rust: #16120f;
 
+  /* Paper: warm off-white section treatment for rhythm/contrast against the
+     dark theme — limestone/bone tone, not stark white, to stay premium. */
+  --paper: #efe9dd;
+  --paper-surface: #e6dfcf;
+  --paper-ink: #1c1712;
+  --paper-muted: #5c5346;
+  --paper-faint: #736a5c;
+  --paper-border: rgba(28, 23, 18, 0.12);
+  --paper-border-strong: rgba(28, 23, 18, 0.2);
+  --paper-rust: #9c4324;
+  --paper-sage: #54634c;
+
   --font-headline: "Geist", sans-serif;
   --font-mono: "Geist Mono", monospace;
   --font-body: "Geist", sans-serif;
@@ -99,6 +111,7 @@ h1, h2, h3 {
   line-height: 1.05;
   letter-spacing: -0.01em;
   margin: 0;
+  color: var(--ink);
 }
 
 h2 { font-size: clamp(2.1rem, 4.4vw, 3.6rem); }
@@ -160,6 +173,37 @@ section[id], article[id] {
 
 .section-head { max-width: 640px; margin: 0 0 var(--space-5); }
 .section-lede { font-size: 1.05rem; max-width: 56ch; }
+
+/* ==========================================================================
+   Paper section (warm off-white rhythm break against the dark theme)
+   ========================================================================== */
+.section--paper {
+  background: var(--paper);
+  --ink: var(--paper-ink);
+  --ink-muted: var(--paper-muted);
+  --ink-faint: var(--paper-faint);
+  --border: var(--paper-border);
+  --border-strong: var(--paper-border-strong);
+  --surface: var(--paper-surface);
+  --surface-2: #dcd4c1;
+}
+.section--paper .eyebrow { color: var(--paper-rust); }
+.section--paper .service-icon {
+  background: rgba(156, 67, 36, 0.16);
+  color: var(--paper-rust);
+}
+.section--paper .service-card--bodywork .service-icon {
+  background: rgba(84, 99, 76, 0.18);
+  color: var(--paper-sage);
+}
+.section--paper .btn-outline {
+  color: var(--paper-sage);
+  border-color: var(--paper-sage);
+}
+.section--paper .btn-outline:hover {
+  background: var(--paper-sage);
+  color: var(--paper);
+}
 
 /* ==========================================================================
    Buttons
@@ -656,25 +700,59 @@ section[id], article[id] {
 .video-toggle[aria-pressed="true"] .icon-pause { display: none; }
 
 /* ==========================================================================
+   Marquee (oversized scrolling section divider)
+   ========================================================================== */
+.marquee {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-3) 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 32s linear infinite;
+}
+.marquee-track span {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-headline);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(2.6rem, 7vw, 5.5rem);
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(244, 235, 221, 0.4);
+  white-space: nowrap;
+  padding: 0 1.25em;
+}
+.marquee-track span i {
+  display: inline-block;
+  width: 0.3em;
+  height: 0.3em;
+  margin-left: 1.25em;
+  border-radius: 50%;
+  background: var(--rust-light);
+  font-style: normal;
+}
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
+/* ==========================================================================
    Recovery
    ========================================================================== */
 .recovery { padding: var(--space-7) 0; }
 
-.recovery-intro {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: var(--space-6);
-  align-items: center;
-  margin-bottom: var(--space-5);
-}
-@media (max-width: 860px) {
-  .recovery-intro { grid-template-columns: 1fr; gap: var(--space-4); }
-}
-
-.recovery-copy h2 { margin-bottom: var(--space-3); }
-.recovery-copy p { max-width: 50ch; }
-
 .recovery-gallery {
+  margin-top: var(--space-6);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-3);
