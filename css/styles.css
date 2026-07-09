@@ -263,7 +263,7 @@ section[id], article[id] {
 }
 .transform-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 320px));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 460px));
   justify-content: center;
   gap: var(--space-4);
 }
@@ -964,7 +964,7 @@ section[id], article[id] {
 }
 .about-grid {
   display: grid;
-  grid-template-columns: 400px 1fr;
+  grid-template-columns: 480px 1fr;
   gap: var(--space-6);
   align-items: center;
 }
@@ -972,7 +972,7 @@ section[id], article[id] {
   .about-grid { grid-template-columns: 1fr; gap: var(--space-5); }
 }
 
-.about-portrait { width: 100%; max-width: 400px; margin: 0 auto; }
+.about-portrait { width: 100%; max-width: 480px; margin: 0 auto; }
 
 .about-copy h2 { margin-bottom: var(--space-3); }
 .about-copy p { max-width: 60ch; }
