@@ -634,6 +634,13 @@ section[id], article[id] {
 .hero-title .line { display: block; overflow: hidden; }
 .hero-title em { color: var(--rust-light); font-style: normal; }
 
+/* Desktop only: break "you really are." onto its own line, so the headline
+   reads as 3 lines total instead of wrapping into 4. Mobile keeps its
+   natural wrap (span stays inline, no forced break). */
+@media (min-width: 861px) {
+  .hero-line-break { display: block; }
+}
+
 /* Rotating hero word: only "strong" cycles, rest of the headline stays put.
    Stacked via grid so every word occupies the same cell; JS toggles which
    one is active/next/prev to drive the flip. No-JS fallback just shows the
