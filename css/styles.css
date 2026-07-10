@@ -161,6 +161,24 @@ section[id], article[id] {
   margin: 0 0 var(--space-2);
 }
 
+/* Hero eyebrow states plainly what the business offers, so it gets a
+   pill/badge treatment to read faster than a quiet label would. */
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55em 1.1em;
+  border-radius: 999px;
+  background: rgba(196, 85, 46, 0.16);
+  border: 1px solid rgba(219, 165, 76, 0.4);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+  margin-bottom: var(--space-3);
+}
+@media (max-width: 640px) {
+  .hero-eyebrow { font-size: 0.78rem; padding: 0.5em 0.9em; }
+}
+
 .accent-underline {
   position: relative;
   display: inline-block;
