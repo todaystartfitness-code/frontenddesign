@@ -22,10 +22,6 @@
 
   --on-rust: #16120f;
 
-  /* Elevated dark tone for the About section — brighter than --surface, to
-     read as a distinct, lighter band against the sections above/below it. */
-  --about-surface: #3c2f24;
-
   /* Paper: warm off-white section treatment for rhythm/contrast against the
      dark theme — limestone/bone tone, not stark white, to stay premium. */
   --paper: #efe9dd;
@@ -37,6 +33,11 @@
   --paper-border-strong: rgba(28, 23, 18, 0.2);
   --paper-rust: #9c4324;
   --paper-sage: #54634c;
+
+  /* Warmer, golder parchment than --paper-surface — used once, for the Results
+     section-head, so it reads as its own "ledger" note rather than a repeat
+     of the Services/Testimonials paper tone. */
+  --ledger: #f3e6c8;
 
   --font-headline: "Geist", sans-serif;
   --font-mono: "Geist Mono", monospace;
@@ -708,9 +709,12 @@ section[id], article[id] {
   align-self: center;
   justify-self: center;
   font-family: var(--font-headline);
-  font-weight: 600;
-  font-size: clamp(1.15rem, 2.6vw, 1.6rem);
-  color: var(--ink-muted);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  font-size: clamp(1.5rem, 3.6vw, 2.2rem);
+  color: var(--amber);
+  text-shadow: 0 0 40px rgba(219, 165, 76, 0.35);
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
@@ -797,6 +801,17 @@ section[id], article[id] {
 .service-card--strength.is-backlit { border-color: rgba(196, 85, 46, 0.55); }
 .service-card--bodywork:hover,
 .service-card--bodywork.is-backlit { border-color: rgba(138, 154, 126, 0.55); }
+
+/* Sage tint on the bodywork card — same hue as its outline button/icon,
+   so the card itself signals "calm/recovery" at a glance next to strength's rust. */
+.section--paper .service-card--bodywork {
+  background: rgba(84, 99, 76, 0.12);
+  border-color: rgba(84, 99, 76, 0.35);
+}
+.section--paper .service-card--bodywork:hover,
+.section--paper .service-card--bodywork.is-backlit {
+  border-color: rgba(84, 99, 76, 0.6);
+}
 
 .service-icon {
   width: 64px; height: 64px;
@@ -1059,7 +1074,9 @@ section[id], article[id] {
    ========================================================================== */
 .about {
   padding: var(--space-7) 0;
-  background: linear-gradient(180deg, transparent, var(--about-surface) 20%, var(--about-surface) 80%, transparent);
+  /* Matches the Stats strip directly below — the band flows into it instead
+     of handing off to an unrelated tone. */
+  background: linear-gradient(180deg, transparent, var(--surface) 20%, var(--surface) 80%, transparent);
 }
 .about-grid {
   display: grid;
@@ -1117,11 +1134,35 @@ section[id], article[id] {
     var(--bg);
 }
 .results .section-head {
+  position: relative;
+  overflow: hidden;
   margin-left: auto;
   margin-right: auto;
   text-align: center;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--ledger);
+  box-shadow: 0 20px 50px -30px rgba(0, 0, 0, 0.5);
 }
-.results .section-lede { margin-left: auto; margin-right: auto; }
+/* Same fine-grain texture as the page-wide film grain, reused locally so this
+   card reads as physical "paper record" rather than a flat color chip. */
+.results .section-head::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.results .section-head > * {
+  position: relative;
+  z-index: 1;
+}
+.results .section-head .eyebrow { color: var(--paper-rust); }
+.results .section-head h2 { color: var(--paper-ink); }
+.results .section-head .accent-underline::after { background: var(--paper-rust); }
+.results .section-lede { margin-left: auto; margin-right: auto; color: var(--paper-muted); }
 
 /* ==========================================================================
    Testimonials
