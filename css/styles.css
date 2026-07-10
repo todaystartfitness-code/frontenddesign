@@ -303,11 +303,13 @@ section[id], article[id] {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--ink);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .result-tag {
-  font-size: 0.85rem;
-  font-style: italic;
-  color: var(--ink-faint);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--amber);
   text-align: right;
 }
 .result-row + .result-row { margin-top: var(--space-3); }
@@ -699,12 +701,15 @@ section[id], article[id] {
 
 .service-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: var(--space-5) var(--space-4) var(--space-4);
   transition: transform var(--dur-med) var(--ease-out), border-color var(--dur-med) var(--ease-out), box-shadow var(--dur-med) var(--ease-out);
 }
+.service-card .btn-block { margin-top: auto; }
 .service-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 24px 48px -20px rgba(0,0,0,0.5);
@@ -1042,6 +1047,12 @@ section[id], article[id] {
    Results
    ========================================================================== */
 .results { padding: var(--space-7) 0; }
+.results .section-head {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.results .section-lede { margin-left: auto; margin-right: auto; }
 
 /* ==========================================================================
    Testimonials
