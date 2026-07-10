@@ -22,6 +22,10 @@
 
   --on-rust: #16120f;
 
+  /* Elevated dark tone for the About section — brighter than --surface, to
+     read as a distinct, lighter band against the sections above/below it. */
+  --about-surface: #3c2f24;
+
   /* Paper: warm off-white section treatment for rhythm/contrast against the
      dark theme — limestone/bone tone, not stark white, to stay premium. */
   --paper: #efe9dd;
@@ -209,7 +213,9 @@ section[id], article[id] {
    Compare card (before/after diptych)
    ========================================================================== */
 .compare-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  aspect-ratio: 9 / 8;
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--border);
@@ -217,8 +223,9 @@ section[id], article[id] {
 }
 .compare-half {
   position: relative;
-  flex: 1 1 50%;
-  aspect-ratio: 3 / 4;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   overflow: hidden;
 }
 .compare-half + .compare-half { border-left: 2px solid var(--rust); }
@@ -263,10 +270,11 @@ section[id], article[id] {
 }
 .transform-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 460px));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 600px));
   justify-content: center;
   gap: var(--space-4);
 }
+.transform-grid figure { margin: 0; }
 .transform-block { margin-top: var(--space-6); text-align: center; }
 .transform-block h3 {
   font-size: clamp(1.4rem, 2.6vw, 1.9rem);
@@ -984,11 +992,11 @@ section[id], article[id] {
    ========================================================================== */
 .about {
   padding: var(--space-7) 0;
-  background: linear-gradient(180deg, transparent, var(--surface) 20%, var(--surface) 80%, transparent);
+  background: linear-gradient(180deg, transparent, var(--about-surface) 20%, var(--about-surface) 80%, transparent);
 }
 .about-grid {
   display: grid;
-  grid-template-columns: 480px 1fr;
+  grid-template-columns: 600px 1fr;
   gap: var(--space-6);
   align-items: center;
 }
@@ -996,7 +1004,7 @@ section[id], article[id] {
   .about-grid { grid-template-columns: 1fr; gap: var(--space-5); }
 }
 
-.about-portrait { width: 100%; max-width: 480px; margin: 0 auto; }
+.about-portrait { width: 100%; max-width: 600px; margin: 0 auto; }
 
 .about-copy h2 { margin-bottom: var(--space-3); }
 .about-copy p { max-width: 60ch; }
