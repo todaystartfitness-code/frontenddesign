@@ -198,7 +198,9 @@ section[id], article[id] {
   color: var(--paper-rust);
 }
 .section--paper .service-card--bodywork .service-icon {
-  background: rgba(84, 99, 76, 0.18);
+  /* Light chip instead of a dark-green tint — needed for contrast now that
+     the card itself is solid sage. */
+  background: rgba(255, 255, 255, 0.4);
   color: var(--paper-sage);
 }
 .section--paper .btn-outline {
@@ -370,6 +372,9 @@ section[id], article[id] {
   white-space: nowrap;
 }
 .section--paper .result-gain { color: var(--paper-rust); background: rgba(156, 67, 36, 0.14); }
+/* Amber reads well on the dark theme but washes out on the light ledger tone
+   Results now uses — swap to paper-rust so the "pop" tag stays legible. */
+.section--paper .result-tag { color: var(--paper-rust); }
 .result-bars { display: flex; flex-direction: column; gap: 0.3em; }
 .result-bar-line {
   display: flex;
@@ -826,15 +831,17 @@ section[id], article[id] {
 .service-card--bodywork:hover,
 .service-card--bodywork.is-backlit { border-color: rgba(138, 154, 126, 0.55); }
 
-/* Sage tint on the bodywork card — same hue as its outline button/icon,
-   so the card itself signals "calm/recovery" at a glance next to strength's rust. */
+/* Solid sage fill on the bodywork card — same green as its "75 Minutes"
+   badge — so the card itself signals "calm/recovery" at a glance next to
+   strength's rust. Everything sitting on top gets re-tuned below for
+   contrast against a mid-value green instead of the neutral paper surface. */
 .section--paper .service-card--bodywork {
-  background: rgba(84, 99, 76, 0.12);
-  border-color: rgba(84, 99, 76, 0.35);
+  background: var(--sage);
+  border-color: var(--paper-sage);
 }
 .section--paper .service-card--bodywork:hover,
 .section--paper .service-card--bodywork.is-backlit {
-  border-color: rgba(84, 99, 76, 0.6);
+  border-color: var(--paper-sage);
 }
 
 .service-icon {
@@ -866,6 +873,12 @@ section[id], article[id] {
   right: var(--space-4);
 }
 .badge--calm { background: var(--sage); color: var(--bg); }
+/* Card behind it is now solid --sage too, so the badge needs its own
+   contrasting shade to still read as a separate chip. */
+.section--paper .service-card--bodywork .badge--calm {
+  background: var(--paper-sage);
+  color: var(--paper);
+}
 
 .service-card h3 { margin-bottom: var(--space-2); color: var(--ink); }
 .service-copy { max-width: 44ch; }
@@ -918,6 +931,7 @@ section[id], article[id] {
   transform: rotate(45deg);
 }
 .service-card--bodywork .service-list li::before { background: var(--sage); }
+.section--paper .service-card--bodywork .service-list li::before { background: var(--paper-sage); }
 
 /* ==========================================================================
    Studio
@@ -1152,25 +1166,18 @@ section[id], article[id] {
   position: relative;
   padding: var(--space-7) 0;
   overflow: hidden;
+  /* Ledger tone across the whole section (not just the paper--section
+     default) — a warmer, golder parchment than Services/Testimonials, so
+     Results reads as its own "on the record" note against the dark bands
+     surrounding it. */
   background:
     radial-gradient(ellipse 900px 520px at 50% 0%, rgba(219, 165, 76, 0.14), transparent 65%),
     radial-gradient(ellipse 700px 460px at 8% 100%, rgba(196, 85, 46, 0.12), transparent 60%),
-    var(--bg);
-}
-.results .section-head {
-  position: relative;
-  overflow: hidden;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-  padding: var(--space-4) var(--space-5);
-  border-radius: var(--radius-lg);
-  background: var(--ledger);
-  box-shadow: 0 20px 50px -30px rgba(0, 0, 0, 0.5);
+    var(--ledger);
 }
 /* Same fine-grain texture as the page-wide film grain, reused locally so this
-   card reads as physical "paper record" rather than a flat color chip. */
-.results .section-head::before {
+   section reads as physical "paper record" rather than a flat color block. */
+.results::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1179,14 +1186,13 @@ section[id], article[id] {
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.results .section-head > * {
-  position: relative;
-  z-index: 1;
+.results .wrap { position: relative; z-index: 1; }
+.results .section-head {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
-.results .section-head .eyebrow { color: var(--paper-rust); }
-.results .section-head h2 { color: var(--paper-ink); }
-.results .section-head .accent-underline::after { background: var(--paper-rust); }
-.results .section-lede { margin-left: auto; margin-right: auto; color: var(--paper-muted); }
+.results .section-lede { margin-left: auto; margin-right: auto; }
 
 /* ==========================================================================
    Testimonials
