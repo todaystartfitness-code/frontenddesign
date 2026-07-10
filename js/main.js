@@ -174,15 +174,18 @@
     elements.forEach(function (el) { observer.observe(el); });
   })();
 
-  /* ---------------- Results section: scroll-driven "backlit" cards on touch devices ----------------
+  /* ---------------- Scroll-driven "backlit" cards on touch devices ----------------
      Hover-capable devices get the glow/expand via CSS :hover. On touch devices
-     (no persistent hover), the same glow is applied to whichever result card
-     or before/after card is centered in the viewport as the user scrolls. */
-  (function setupResultsBacklight() {
+     (no persistent hover), the same glow is applied to whichever card is
+     centered in the viewport as the user scrolls — covers Results cards,
+     Jane's before/after compare card, and the Services cards. */
+  (function setupScrollBacklight() {
     var hoverCapable = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     if (prefersReducedMotion || hoverCapable || !("IntersectionObserver" in window)) return;
 
-    var targets = document.querySelectorAll("#results .result-card, #results .compare-card");
+    var targets = document.querySelectorAll(
+      "#results .result-card, #results .compare-card, #services .service-card"
+    );
     if (!targets.length) return;
 
     var observer = new IntersectionObserver(
@@ -194,6 +197,18 @@
       { threshold: 0, rootMargin: "-42% 0px -42% 0px" }
     );
     targets.forEach(function (el) { observer.observe(el); });
+  })();
+
+  /* ---------------- Hero tagline rotator ---------------- */
+  (function setupTaglineRotator() {
+    var phrases = document.querySelectorAll(".tagline-phrase");
+    if (phrases.length < 2 || prefersReducedMotion) return;
+    var index = 0;
+    setInterval(function () {
+      phrases[index].classList.remove("is-active");
+      index = (index + 1) % phrases.length;
+      phrases[index].classList.add("is-active");
+    }, 3200);
   })();
 
   /* ---------------- Stat counters (IntersectionObserver-based) ---------------- */
