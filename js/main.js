@@ -169,6 +169,28 @@
     elements.forEach(function (el) { observer.observe(el); });
   })();
 
+  /* ---------------- Results section: scroll-driven "backlit" cards on touch devices ----------------
+     Hover-capable devices get the glow/expand via CSS :hover. On touch devices
+     (no persistent hover), the same glow is applied to whichever result card
+     or before/after card is centered in the viewport as the user scrolls. */
+  (function setupResultsBacklight() {
+    var hoverCapable = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    if (prefersReducedMotion || hoverCapable || !("IntersectionObserver" in window)) return;
+
+    var targets = document.querySelectorAll("#results .result-card, #results .compare-card");
+    if (!targets.length) return;
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          entry.target.classList.toggle("is-backlit", entry.isIntersecting);
+        });
+      },
+      { threshold: 0, rootMargin: "-42% 0px -42% 0px" }
+    );
+    targets.forEach(function (el) { observer.observe(el); });
+  })();
+
   /* ---------------- Stat counters (IntersectionObserver-based) ---------------- */
   (function setupStatCounters() {
     var stats = document.querySelectorAll(".stat");

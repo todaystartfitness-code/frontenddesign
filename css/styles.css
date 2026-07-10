@@ -221,6 +221,19 @@ section[id], article[id] {
   border: 1px solid var(--border);
   box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
 }
+#results .compare-card {
+  transition: transform var(--dur-med) var(--ease-out), box-shadow var(--dur-med) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  #results .compare-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 70px 14px rgba(219, 165, 76, 0.28), 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+  }
+}
+#results .compare-card.is-backlit {
+  transform: scale(1.03);
+  box-shadow: 0 0 70px 14px rgba(219, 165, 76, 0.28), 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+}
 .compare-half {
   position: relative;
   width: 100%;
@@ -289,11 +302,16 @@ section[id], article[id] {
   transition: transform var(--dur-med) var(--ease-out), border-color var(--dur-med) var(--ease-out), box-shadow var(--dur-med) var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) {
-  .result-card:hover {
-    transform: translateY(-6px);
+  #results .result-card:hover {
+    transform: scale(1.03) translateY(-6px);
     border-color: rgba(196, 85, 46, 0.4);
-    box-shadow: 0 24px 48px -20px rgba(0,0,0,0.5);
+    box-shadow: 0 0 70px 14px rgba(219, 165, 76, 0.28), 0 24px 48px -20px rgba(0,0,0,0.5);
   }
+}
+#results .result-card.is-backlit {
+  transform: scale(1.03);
+  border-color: rgba(196, 85, 46, 0.4);
+  box-shadow: 0 0 70px 14px rgba(219, 165, 76, 0.28), 0 24px 48px -20px rgba(0,0,0,0.5);
 }
 .result-card-head {
   display: flex;
@@ -719,7 +737,7 @@ section[id], article[id] {
   transition: transform var(--dur-med) var(--ease-out), border-color var(--dur-med) var(--ease-out), box-shadow var(--dur-med) var(--ease-out);
 }
 .service-card .btn-block { margin-top: auto; }
-.service-card:hover {
+#services .service-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 24px 48px -20px rgba(0,0,0,0.5);
 }
@@ -759,6 +777,15 @@ section[id], article[id] {
 
 .service-card h3 { margin-bottom: var(--space-2); color: var(--ink); }
 .service-copy { max-width: 44ch; }
+.price-pitch {
+  max-width: 40ch;
+  margin-top: var(--space-2);
+  font-family: var(--font-headline);
+  font-weight: 600;
+  font-style: italic;
+  color: var(--amber);
+}
+.section--paper .price-pitch { color: var(--paper-rust); }
 
 .service-price {
   display: flex;
