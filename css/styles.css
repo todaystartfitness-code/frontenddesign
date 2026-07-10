@@ -649,6 +649,15 @@ section[id], article[id] {
   .hero-line-break { display: block; }
 }
 
+/* "how" travels with "show" on desktop (so it wraps naturally at the end of
+   line 1 instead of always starting a new line), but stays with the rotating
+   word on mobile, where line 1 has less room to spare. */
+.hero-how--desktop { display: none; }
+@media (min-width: 861px) {
+  .hero-how--desktop { display: inline; }
+  .hero-how--mobile { display: none; }
+}
+
 /* Rotating hero word: only "strong" cycles, rest of the headline stays put.
    Stacked via grid so every word occupies the same cell; JS toggles which
    one is active/next/prev to drive the flip. No-JS fallback just shows the
