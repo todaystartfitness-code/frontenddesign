@@ -132,6 +132,9 @@
 
     if (prefersReducedMotion || !("IntersectionObserver" in window)) {
       elements.forEach(function (el) { el.classList.add("is-visible"); });
+      document.querySelectorAll(".result-bar-fill[data-width]").forEach(function (bar) {
+        bar.style.width = bar.getAttribute("data-width") + "%";
+      });
       return;
     }
 
@@ -149,6 +152,14 @@
             entry.target.classList.add("is-visible");
             var priceEl = entry.target.querySelector(".price-now[data-value]");
             if (priceEl) countUpNumber(priceEl, parseInt(priceEl.getAttribute("data-value"), 10), { prefix: "$", duration: 1.1 });
+            var barFills = entry.target.querySelectorAll(".result-bar-fill[data-width]");
+            if (barFills.length) {
+              setTimeout(function () {
+                barFills.forEach(function (bar) {
+                  bar.style.width = bar.getAttribute("data-width") + "%";
+                });
+              }, 250);
+            }
             obs.unobserve(entry.target);
           }
         });
