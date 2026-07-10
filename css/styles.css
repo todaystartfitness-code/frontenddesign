@@ -282,6 +282,9 @@ section[id], article[id] {
   justify-content: center;
   gap: var(--space-4);
 }
+@media (max-width: 640px) {
+  .result-grid { gap: var(--space-3); }
+}
 .transform-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 600px));
@@ -339,6 +342,10 @@ section[id], article[id] {
   text-align: right;
 }
 .result-row + .result-row { margin-top: var(--space-3); }
+@media (max-width: 640px) {
+  .result-card { padding: var(--space-3); }
+  .result-row + .result-row { margin-top: var(--space-2); }
+}
 .result-row-head {
   display: flex;
   justify-content: space-between;
@@ -670,6 +677,12 @@ section[id], article[id] {
   60% { opacity: 0.3; }
   100% { transform: translateY(14px); opacity: 0; }
 }
+@media (max-width: 640px) {
+  /* Scrolling is the obvious/native interaction on a phone, and the hero's
+     content column runs long enough at this width that this cue would sit
+     on top of the trust list instead of at a clear bottom edge. */
+  .scroll-cue { display: none; }
+}
 
 /* ==========================================================================
    Stats
@@ -710,6 +723,7 @@ section[id], article[id] {
 }
 @media (max-width: 640px) {
   .stat-divider { display: none; }
+  .stats-inner { flex-direction: column; gap: var(--space-4); }
 }
 
 /* ==========================================================================
@@ -992,7 +1006,11 @@ section[id], article[id] {
   gap: var(--space-3);
 }
 @media (max-width: 640px) {
-  .recovery-gallery { grid-template-columns: 1fr; }
+  /* Keep 2 across instead of stacking full-width — these are supporting
+     technique shots, not primary content, so they don't need to dominate
+     the scroll the way a single full-bleed photo each would. */
+  .recovery-gallery { grid-template-columns: repeat(2, 1fr); gap: var(--space-2); }
+  .recovery-gallery > figure:last-child { grid-column: 1 / -1; max-width: 50%; margin: 0 auto; }
 }
 
 .recovery-gallery figure {
@@ -1317,4 +1335,18 @@ section[id], article[id] {
   }
   .main-nav.is-open { transform: translateX(0); }
   .nav-toggle { display: flex; }
+
+  .nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 6, 5, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-med) var(--ease-out);
+    z-index: 85;
+  }
+  .nav-backdrop.is-open { opacity: 1; pointer-events: auto; }
+}
+@media (min-width: 861px) {
+  .nav-backdrop { display: none; }
 }

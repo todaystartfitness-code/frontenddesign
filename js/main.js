@@ -17,15 +17,20 @@
   /* ---------------- Mobile nav ---------------- */
   var navToggle = document.getElementById("nav-toggle");
   var mainNav = document.getElementById("main-nav");
+  var navBackdrop = document.getElementById("nav-backdrop");
+  function closeNav() {
+    mainNav.classList.remove("is-open");
+    navBackdrop.classList.remove("is-open");
+    navToggle.setAttribute("aria-expanded", "false");
+  }
   navToggle.addEventListener("click", function () {
     var open = mainNav.classList.toggle("is-open");
+    navBackdrop.classList.toggle("is-open", open);
     navToggle.setAttribute("aria-expanded", open ? "true" : "false");
   });
+  navBackdrop.addEventListener("click", closeNav);
   mainNav.querySelectorAll("a").forEach(function (link) {
-    link.addEventListener("click", function () {
-      mainNav.classList.remove("is-open");
-      navToggle.setAttribute("aria-expanded", "false");
-    });
+    link.addEventListener("click", closeNav);
   });
 
   /* ---------------- Magnetic buttons (primary CTAs, fine-pointer only) ---------------- */
