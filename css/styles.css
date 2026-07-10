@@ -1090,11 +1090,13 @@ section[id], article[id] {
    ========================================================================== */
 .recovery {
   padding: var(--space-7) 0;
-  /* Cool sage tint — reads as the calmer counterpoint to Studio's warm rust
-     band, so the strength/recovery duality shows up in color, not just copy. */
+  /* Solid sage — same green as the Thai Bodywork "75 Minutes" badge — as the
+     calmer counterpoint to Studio's warm rust band. The corner spotlight is
+     kept but re-tinted light (a same-hue glow would vanish against the new
+     solid green base). */
   background:
-    radial-gradient(ellipse 900px 520px at 8% 92%, rgba(138, 154, 126, 0.14), transparent 62%),
-    var(--bg);
+    radial-gradient(ellipse 900px 520px at 8% 92%, rgba(255, 255, 255, 0.22), transparent 62%),
+    var(--sage);
 }
 
 .recovery-grid {
