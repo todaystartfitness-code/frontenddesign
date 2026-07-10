@@ -848,7 +848,16 @@ section[id], article[id] {
 /* ==========================================================================
    Studio
    ========================================================================== */
-.studio { padding: var(--space-7) 0; }
+.studio {
+  padding: var(--space-7) 0;
+  /* Raised, rust-warmed band — breaks up the run of flat --bg sections
+     between the paper Services section above and Results below. */
+  background:
+    radial-gradient(ellipse 900px 520px at 92% 8%, rgba(196, 85, 46, 0.14), transparent 62%),
+    var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
 
 .studio-grid {
   display: grid;
@@ -991,7 +1000,14 @@ section[id], article[id] {
 /* ==========================================================================
    Recovery
    ========================================================================== */
-.recovery { padding: var(--space-7) 0; }
+.recovery {
+  padding: var(--space-7) 0;
+  /* Cool sage tint — reads as the calmer counterpoint to Studio's warm rust
+     band, so the strength/recovery duality shows up in color, not just copy. */
+  background:
+    radial-gradient(ellipse 900px 520px at 8% 92%, rgba(138, 154, 126, 0.14), transparent 62%),
+    var(--bg);
+}
 
 .recovery-grid {
   display: grid;
@@ -1001,54 +1017,6 @@ section[id], article[id] {
 }
 @media (max-width: 860px) {
   .recovery-grid { grid-template-columns: 1fr; gap: var(--space-5); }
-}
-
-.recovery-gallery {
-  margin-top: var(--space-6);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-3);
-}
-@media (max-width: 640px) {
-  /* Keep 2 across instead of stacking full-width — these are supporting
-     technique shots, not primary content, so they don't need to dominate
-     the scroll the way a single full-bleed photo each would. */
-  .recovery-gallery { grid-template-columns: repeat(2, 1fr); gap: var(--space-2); }
-  .recovery-gallery > figure:last-child { grid-column: 1 / -1; max-width: 50%; margin: 0 auto; }
-}
-
-.recovery-gallery figure {
-  margin: 0;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  transition: transform 0.5s var(--ease-spring), box-shadow 0.5s var(--ease-out);
-}
-@media (hover: hover) and (pointer: fine) {
-  .recovery-gallery figure:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 24px 48px -22px rgba(0, 0, 0, 0.6);
-  }
-}
-.recovery-gallery img {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.6s var(--ease-out);
-}
-@media (hover: hover) and (pointer: fine) {
-  .recovery-gallery figure:hover img { transform: scale(1.05); }
-}
-.recovery-gallery figcaption {
-  padding: var(--space-2);
-  text-align: center;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.82rem;
-  color: var(--sage);
 }
 
 /* ==========================================================================
@@ -1140,6 +1108,17 @@ section[id], article[id] {
   padding: var(--space-4);
   text-align: center;
   color: var(--ink-faint);
+  transition: transform var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  #testimonials .testimonial-card:hover {
+    transform: translateY(-6px);
+    border-style: solid;
+    border-color: var(--rust-light);
+    box-shadow: 0 24px 48px -26px rgba(0, 0, 0, 0.55);
+  }
 }
 .testimonial-avatar {
   width: 48px; height: 48px;
@@ -1150,6 +1129,16 @@ section[id], article[id] {
   font-family: var(--font-mono);
   font-size: 1.2rem;
   color: var(--ink-faint);
+  /* Slow, staggered "breathing" pulse per card gives the grid quiet, ongoing
+     life rather than sitting static — echoes the bodywork icon pulse elsewhere. */
+  animation: avatar-breathe 4.5s ease-in-out infinite;
+}
+.testimonial-card:nth-child(2) .testimonial-avatar { animation-delay: 0.7s; }
+.testimonial-card:nth-child(3) .testimonial-avatar { animation-delay: 1.4s; }
+.testimonial-card:nth-child(4) .testimonial-avatar { animation-delay: 2.1s; }
+@keyframes avatar-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
 }
 .testimonial-quote { font-style: italic; margin-bottom: var(--space-2); }
 .testimonial-name {
@@ -1231,8 +1220,8 @@ section[id], article[id] {
 
 .booking-embed { text-align: left; }
 .booking-frame {
-  height: 720px;
-  max-height: 80vh;
+  height: 920px;
+  max-height: 92vh;
   box-shadow: 0 30px 80px -24px rgba(196, 85, 46, 0.35);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
