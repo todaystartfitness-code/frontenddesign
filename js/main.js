@@ -6,6 +6,30 @@
 
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  /* ---------------- Hero word rotator ("strong" -> "resilient" -> "capable") ---------------- */
+  (function setupHeroWordRotator() {
+    var words = document.querySelectorAll(".hero-word-rotator .hero-word");
+    if (!words.length) return;
+    var index = 0;
+
+    function render() {
+      var n = words.length;
+      words.forEach(function (word, i) {
+        word.classList.remove("is-active", "is-next", "is-prev");
+        if (i === index) word.classList.add("is-active");
+        else if (i === (index + 1) % n) word.classList.add("is-next");
+        else if (i === (index - 1 + n) % n) word.classList.add("is-prev");
+      });
+    }
+    render();
+
+    if (prefersReducedMotion || words.length < 2) return;
+    setInterval(function () {
+      index = (index + 1) % words.length;
+      render();
+    }, 2400);
+  })();
+
   /* ---------------- Header scroll state ---------------- */
   var header = document.getElementById("site-header");
   var onScroll = function () {
