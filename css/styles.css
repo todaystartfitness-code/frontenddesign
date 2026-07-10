@@ -230,12 +230,16 @@ section[id], article[id] {
 @media (hover: hover) and (pointer: fine) {
   #results .compare-card:hover {
     transform: scale(1.03);
-    box-shadow: 0 0 70px 14px rgba(219, 165, 76, 0.28), 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 50px 10px rgba(156, 67, 36, 0.22), 0 30px 60px -30px rgba(28, 23, 18, 0.45);
   }
 }
+/* Touch devices get a more pronounced pop than hover since it's their only
+   cue — and rust/dark shadow instead of the old amber glow, which read fine
+   on the section's old dark background but washes out on the light ledger
+   tone the whole Results section now uses. */
 #results .compare-card.is-backlit {
-  transform: scale(1.03);
-  box-shadow: 0 0 70px 14px rgba(219, 165, 76, 0.28), 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+  transform: scale(1.05) translateY(-6px);
+  box-shadow: 0 0 50px 10px rgba(156, 67, 36, 0.22), 0 32px 64px -26px rgba(28, 23, 18, 0.5);
 }
 .compare-half {
   position: relative;
@@ -310,14 +314,18 @@ section[id], article[id] {
 @media (hover: hover) and (pointer: fine) {
   #results .result-card:hover {
     transform: scale(1.03) translateY(-6px);
-    border-color: rgba(196, 85, 46, 0.4);
-    box-shadow: 0 0 70px 14px rgba(219, 165, 76, 0.28), 0 24px 48px -20px rgba(0,0,0,0.5);
+    border-color: var(--paper-rust);
+    box-shadow: 0 0 50px 10px rgba(156, 67, 36, 0.22), 0 24px 48px -20px rgba(28, 23, 18, 0.4);
   }
 }
+/* Touch devices get a more pronounced pop than hover since it's their only
+   cue — and rust/dark shadow instead of the old amber glow, which read fine
+   on the section's old dark background but washes out on the light ledger
+   tone the whole Results section now uses. */
 #results .result-card.is-backlit {
-  transform: scale(1.03);
-  border-color: rgba(196, 85, 46, 0.4);
-  box-shadow: 0 0 70px 14px rgba(219, 165, 76, 0.28), 0 24px 48px -20px rgba(0,0,0,0.5);
+  transform: scale(1.05) translateY(-8px);
+  border-color: var(--paper-rust);
+  box-shadow: 0 0 50px 10px rgba(156, 67, 36, 0.22), 0 28px 56px -22px rgba(28, 23, 18, 0.45);
 }
 .result-card-head {
   display: flex;
