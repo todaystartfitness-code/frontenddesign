@@ -682,6 +682,10 @@ section[id], article[id] {
      content column runs long enough at this width that this cue would sit
      on top of the trust list instead of at a clear bottom edge. */
   .scroll-cue { display: none; }
+
+  /* Same credentials repeat immediately in the About section below, so
+     this list is redundant weight at the top of a phone screen. */
+  .hero-trust { display: none; }
 }
 
 /* ==========================================================================
