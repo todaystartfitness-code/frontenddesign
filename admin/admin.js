@@ -63,8 +63,18 @@
         "<td>" + money(p.price_cents) + "</td>" +
         "<td>" + p.expiration_days + "d</td>" +
         "<td>" + (p.is_drop_in ? "Yes" : "") + "</td>" +
+        "<td>" + p.active_grants + "</td>" +
         "<td></td>";
       var actionCell = tr.lastElementChild;
+
+      var editBtn = document.createElement("button");
+      editBtn.className = "link-button";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", function () { enterEditMode(p); });
+      actionCell.appendChild(editBtn);
+
+      actionCell.appendChild(document.createTextNode(" "));
+
       var toggleBtn = document.createElement("button");
       toggleBtn.className = "link-button";
       toggleBtn.textContent = p.archived ? "Unarchive" : "Archive";
@@ -76,9 +86,46 @@
         }).then(loadPackages);
       });
       actionCell.appendChild(toggleBtn);
+
       tbody.appendChild(tr);
     });
   }
+
+  var editingPackageId = null;
+
+  function enterEditMode(p) {
+    editingPackageId = p.id;
+    document.getElementById("pkg-name").value = p.name;
+    document.getElementById("pkg-sessions").value = p.session_count;
+    document.getElementById("pkg-price").value = (p.price_cents / 100).toFixed(2);
+    document.getElementById("pkg-expiration").value = p.expiration_days;
+    document.getElementById("pkg-dropin").checked = !!p.is_drop_in;
+
+    document.getElementById("package-form-title").textContent = "Edit package — " + p.name;
+    document.getElementById("package-form-submit").textContent = "Save changes";
+    document.getElementById("package-form-cancel").hidden = false;
+
+    var note = document.getElementById("package-form-note");
+    note.hidden = false;
+    note.textContent = p.active_grants > 0
+      ? p.active_grants + " client(s) currently hold active credits granted from this package. " +
+        "Their session count, expiration, and price already agreed to are locked in and won't change " +
+        "— this only affects future grants from this package."
+      : "No clients currently hold active credits from this package.";
+
+    document.getElementById("pkg-name").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function exitEditMode() {
+    editingPackageId = null;
+    document.getElementById("package-form").reset();
+    document.getElementById("package-form-title").textContent = "Add a package";
+    document.getElementById("package-form-submit").textContent = "Add package";
+    document.getElementById("package-form-cancel").hidden = true;
+    document.getElementById("package-form-note").hidden = true;
+  }
+
+  document.getElementById("package-form-cancel").addEventListener("click", exitEditMode);
 
   function loadPackages() {
     return requireAuth()
@@ -115,19 +162,23 @@
       is_drop_in: document.getElementById("pkg-dropin").checked,
     };
 
-    fetch("/api/admin/packages", {
-      method: "POST",
+    var isEditing = editingPackageId !== null;
+    var url = isEditing ? "/api/admin/packages/" + editingPackageId : "/api/admin/packages";
+    var method = isEditing ? "PATCH" : "POST";
+
+    fetch(url, {
+      method: method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     })
       .then(function (res) {
         if (!res.ok) throw new Error();
-        setMessage(messageEl, "Package added.", "success");
-        e.target.reset();
+        setMessage(messageEl, isEditing ? "Package updated." : "Package added.", "success");
+        exitEditMode();
         return loadPackages();
       })
       .catch(function () {
-        setMessage(messageEl, "Could not add package.", "error");
+        setMessage(messageEl, isEditing ? "Could not update package." : "Could not add package.", "error");
       });
   });
 

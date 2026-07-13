@@ -14,8 +14,13 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function listPackages(env: Env): Promise<Response> {
   const { results } = await env.DB.prepare(
-    "SELECT * FROM packages ORDER BY archived ASC, is_drop_in ASC, price_cents ASC",
-  ).all<PackageRow>();
+    `SELECT p.*,
+      (SELECT COUNT(*) FROM credit_ledger l
+       WHERE l.package_id = p.id AND l.sessions_remaining > 0 AND l.expires_at > unixepoch()
+      ) as active_grants
+     FROM packages p
+     ORDER BY archived ASC, is_drop_in ASC, price_cents ASC`,
+  ).all<PackageRow & { active_grants: number }>();
   return jsonResponse({ packages: results });
 }
 
