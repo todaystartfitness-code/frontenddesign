@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your account | FitStrong Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/portal.css">
+</head>
+<body class="portal">
+<div class="portal-shell">
+  <div class="portal-header">
+    <h1>FitStrong Club</h1>
+    <a href="#" id="logout-link" class="portal-logout">Log out</a>
+  </div>
+  <div class="portal-card">
+    <h2>Your session balance</h2>
+    <div class="portal-balance" id="balance">&hellip;</div>
+  </div>
+  <div class="portal-card">
+    <h2>Active credits</h2>
+    <table class="portal-table" id="credits-table" hidden>
+      <thead>
+        <tr><th>Package</th><th>Remaining</th><th>Expires</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="portal-empty" id="credits-empty">No active credits.</p>
+  </div>
+</div>
+<script src="/app/app.js"></script>
+</body>
+</html>

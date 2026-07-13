@@ -1,5 +1,14 @@
 name = "frontenddesign"
 compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+main = "src/index.ts"
 
 [assets]
 directory = "./"
+binding = "ASSETS"
+run_worker_first = ["/api/*", "/app/*", "/admin/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "fitstrong-db"
+database_id = "d97d86e3-1f15-4986-9287-a0fbd6ab5dfd"

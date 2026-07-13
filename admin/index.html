@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin login | FitStrong Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/portal.css">
+</head>
+<body class="portal">
+<div class="portal-shell">
+  <div class="portal-header">
+    <h1>FitStrong Club</h1>
+    <span class="eyebrow">Admin</span>
+  </div>
+  <div class="portal-card">
+    <h2>Admin login</h2>
+    <form id="request-link-form">
+      <div class="portal-field">
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com">
+      </div>
+      <button type="submit" class="portal-button">Send me a login link</button>
+      <p class="portal-message" id="form-message"></p>
+    </form>
+  </div>
+</div>
+<script src="/admin/admin.js" data-page="login"></script>
+</body>
+</html>

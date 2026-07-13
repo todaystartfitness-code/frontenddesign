@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin | FitStrong Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/portal.css">
+<style>
+  body.portal { max-width: none; }
+  .portal-shell { max-width: 920px; }
+  .portal-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+  .portal-row .portal-field { flex: 1; min-width: 140px; }
+  .portal-inline-form { display: flex; gap: var(--space-2); align-items: flex-end; flex-wrap: wrap; margin-bottom: var(--space-2); }
+  .portal-checkbox { display: flex; align-items: center; gap: 0.4rem; margin-bottom: var(--space-2); }
+  .portal-checkbox input { width: auto; }
+  .archived-row { opacity: 0.5; }
+  button.link-button { background: none; border: none; color: var(--ink-faint); text-decoration: underline; cursor: pointer; font-size: 0.85rem; padding: 0; }
+</style>
+</head>
+<body class="portal">
+<div class="portal-shell">
+  <div class="portal-header">
+    <h1>FitStrong Club — Admin</h1>
+    <a href="#" id="logout-link" class="portal-logout">Log out</a>
+  </div>
+
+  <div class="portal-card">
+    <h2>Add a package</h2>
+    <form id="package-form">
+      <div class="portal-row">
+        <div class="portal-field">
+          <label for="pkg-name">Name</label>
+          <input type="text" id="pkg-name" required placeholder="24-Session Package">
+        </div>
+        <div class="portal-field">
+          <label for="pkg-sessions">Sessions</label>
+          <input type="number" id="pkg-sessions" min="1" required>
+        </div>
+        <div class="portal-field">
+          <label for="pkg-price">Price (USD)</label>
+          <input type="number" id="pkg-price" min="0" step="0.01" required>
+        </div>
+        <div class="portal-field">
+          <label for="pkg-expiration">Expires after (days)</label>
+          <input type="number" id="pkg-expiration" min="1" required>
+        </div>
+      </div>
+      <div class="portal-checkbox">
+        <input type="checkbox" id="pkg-dropin">
+        <label for="pkg-dropin">This is the single-session drop-in price</label>
+      </div>
+      <button type="submit" class="portal-button">Add package</button>
+      <p class="portal-message" id="package-message"></p>
+    </form>
+  </div>
+
+  <div class="portal-card">
+    <h2>Packages</h2>
+    <table class="portal-table" id="packages-table">
+      <thead>
+        <tr><th>Name</th><th>Sessions</th><th>Price</th><th>Expires</th><th>Drop-in</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="portal-card">
+    <h2>Add a client</h2>
+    <form id="client-form">
+      <div class="portal-row">
+        <div class="portal-field">
+          <label for="client-email">Email</label>
+          <input type="email" id="client-email" required>
+        </div>
+        <div class="portal-field">
+          <label for="client-name">Name</label>
+          <input type="text" id="client-name">
+        </div>
+        <div class="portal-field">
+          <label for="client-phone">Phone</label>
+          <input type="text" id="client-phone">
+        </div>
+      </div>
+      <button type="submit" class="portal-button">Add client</button>
+      <p class="portal-message" id="client-message"></p>
+    </form>
+  </div>
+
+  <div class="portal-card">
+    <h2>Clients</h2>
+    <table class="portal-table" id="clients-table">
+      <thead>
+        <tr><th>Email</th><th>Name</th><th>Balance</th><th>Grant credits</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<script src="/admin/admin.js" data-page="dashboard"></script>
+</body>
+</html>
