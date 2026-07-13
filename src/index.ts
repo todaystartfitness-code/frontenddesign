@@ -13,6 +13,10 @@ import {
 } from "./routes/admin";
 import { getMe, getMyCredits } from "./routes/client";
 
+function isStaticAssetPath(pathname: string): boolean {
+  return /\.(js|css|png|jpg|jpeg|svg|gif|ico|webp|json|map|woff2?|ttf)$/i.test(pathname);
+}
+
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -95,8 +99,15 @@ export default {
       }
 
       // --- /app/* and /admin/* static shells, gated by session -----------
+      // Static assets (scripts, styles, etc.) are always public — only the
+      // actual HTML pages get gated. Otherwise the login page's own <script>
+      // request gets redirected before it can run, breaking the login form.
       if (pathname.startsWith("/app/") || pathname === "/app") {
-        const isPublic = pathname === "/app" || pathname === "/app/" || pathname === "/app/index.html";
+        const isPublic =
+          isStaticAssetPath(pathname) ||
+          pathname === "/app" ||
+          pathname === "/app/" ||
+          pathname === "/app/index.html";
         if (!isPublic) {
           const client = await getSessionClient(env, request, "app");
           if (!client) {
@@ -108,7 +119,10 @@ export default {
 
       if (pathname.startsWith("/admin/") || pathname === "/admin") {
         const isPublic =
-          pathname === "/admin" || pathname === "/admin/" || pathname === "/admin/index.html";
+          isStaticAssetPath(pathname) ||
+          pathname === "/admin" ||
+          pathname === "/admin/" ||
+          pathname === "/admin/index.html";
         if (!isPublic) {
           const admin = await getSessionClient(env, request, "admin");
           if (!admin) {
