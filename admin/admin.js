@@ -86,22 +86,21 @@
       .then(function (data) {
         packages = data.packages;
         renderPackages();
-        renderClientGrantOptions();
+        renderGrantPackageOptions();
       });
   }
 
-  function renderClientGrantOptions() {
-    document.querySelectorAll(".grant-package-select").forEach(function (select) {
-      var current = select.value;
-      select.innerHTML = "";
-      packages.filter(function (p) { return !p.archived; }).forEach(function (p) {
-        var opt = document.createElement("option");
-        opt.value = p.id;
-        opt.textContent = p.name;
-        select.appendChild(opt);
-      });
-      if (current) select.value = current;
+  function renderGrantPackageOptions() {
+    var select = document.getElementById("grant-package");
+    var current = select.value;
+    select.innerHTML = "";
+    packages.filter(function (p) { return !p.archived; }).forEach(function (p) {
+      var opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.name;
+      select.appendChild(opt);
     });
+    if (current) select.value = current;
   }
 
   document.getElementById("package-form").addEventListener("submit", function (e) {
@@ -144,26 +143,14 @@
         "<td></td>";
 
       var cell = tr.lastElementChild;
-      var select = document.createElement("select");
-      select.className = "grant-package-select";
-      cell.appendChild(select);
-
-      var grantBtn = document.createElement("button");
-      grantBtn.className = "link-button";
-      grantBtn.style.marginLeft = "0.5rem";
-      grantBtn.textContent = "Grant";
-      grantBtn.addEventListener("click", function () {
-        fetch("/api/admin/clients/" + c.id + "/credits", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ package_id: parseInt(select.value, 10) }),
-        }).then(loadClients);
-      });
-      cell.appendChild(grantBtn);
+      var manageBtn = document.createElement("button");
+      manageBtn.className = "link-button";
+      manageBtn.textContent = "Manage credits";
+      manageBtn.addEventListener("click", function () { openManagePanel(c); });
+      cell.appendChild(manageBtn);
 
       tbody.appendChild(tr);
     });
-    renderClientGrantOptions();
   }
 
   function loadClients() {
@@ -171,6 +158,108 @@
       .then(function (res) { return res.json(); })
       .then(function (data) { renderClients(data.clients); });
   }
+
+  // --- Manage-credits panel: view a client's grants, void one, grant a new one.
+
+  var managePanel = document.getElementById("manage-panel");
+  var currentManagedClientId = null;
+
+  function openManagePanel(client) {
+    currentManagedClientId = client.id;
+    document.getElementById("manage-client-title").textContent =
+      "Manage credits — " + client.email;
+    renderGrantPackageOptions();
+    loadManageLedger();
+    managePanel.hidden = false;
+    managePanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function loadManageLedger() {
+    return fetch("/api/admin/clients/" + currentManagedClientId)
+      .then(function (res) { return res.json(); })
+      .then(function (data) { renderManageLedger(data.ledger); });
+  }
+
+  function renderManageLedger(ledger) {
+    var tbody = document.querySelector("#manage-ledger-table tbody");
+    var table = document.getElementById("manage-ledger-table");
+    var empty = document.getElementById("manage-ledger-empty");
+    tbody.innerHTML = "";
+
+    if (ledger.length === 0) {
+      table.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+    table.hidden = false;
+    empty.hidden = true;
+
+    ledger.forEach(function (row) {
+      var tr = document.createElement("tr");
+      var voided = row.sessions_remaining === 0;
+      if (voided) tr.className = "archived-row";
+      var expires = new Date(row.expires_at * 1000).toLocaleDateString();
+      tr.innerHTML =
+        "<td>" + row.package_name + "</td>" +
+        "<td>" + row.sessions_remaining + " / " + row.sessions_granted + "</td>" +
+        "<td>" + expires + "</td>" +
+        "<td></td>";
+
+      if (!voided) {
+        var cell = tr.lastElementChild;
+        var voidBtn = document.createElement("button");
+        voidBtn.className = "link-button";
+        voidBtn.textContent = "Void";
+        voidBtn.addEventListener("click", function () {
+          fetch(
+            "/api/admin/clients/" + currentManagedClientId + "/credits/" + row.id + "/void",
+            { method: "POST" },
+          ).then(function () {
+            return Promise.all([loadManageLedger(), loadClients()]);
+          });
+        });
+        cell.appendChild(voidBtn);
+      }
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById("grant-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var messageEl = document.getElementById("grant-message");
+    var sessionsInput = document.getElementById("grant-sessions").value;
+    var expiresInput = document.getElementById("grant-expires").value;
+
+    var body = {
+      package_id: parseInt(document.getElementById("grant-package").value, 10),
+      note: document.getElementById("grant-note").value || undefined,
+    };
+    if (sessionsInput !== "") body.sessions = parseInt(sessionsInput, 10);
+    if (expiresInput !== "") body.expires_on = expiresInput;
+
+    fetch("/api/admin/clients/" + currentManagedClientId + "/credits", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+      .then(function (res) {
+        if (!res.ok) return res.json().then(function (d) { throw new Error(d.error); });
+        setMessage(messageEl, "Credits granted.", "success");
+        document.getElementById("grant-sessions").value = "";
+        document.getElementById("grant-expires").value = "";
+        document.getElementById("grant-note").value = "";
+        return Promise.all([loadManageLedger(), loadClients()]);
+      })
+      .catch(function (err) {
+        setMessage(messageEl, err.message || "Could not grant credits.", "error");
+      });
+  });
+
+  document.getElementById("manage-close").addEventListener("click", function () {
+    managePanel.hidden = true;
+    currentManagedClientId = null;
+  });
 
   document.getElementById("client-form").addEventListener("submit", function (e) {
     e.preventDefault();

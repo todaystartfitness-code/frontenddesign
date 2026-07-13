@@ -10,6 +10,7 @@ import {
   listClients,
   listPackages,
   updatePackage,
+  voidClientCredit,
 } from "./routes/admin";
 import { getMe, getMyCredits } from "./routes/client";
 
@@ -93,6 +94,11 @@ export default {
         const adjustMatch = pathname.match(/^\/api\/admin\/clients\/(\d+)\/credits\/adjust$/);
         if (adjustMatch && method === "POST") {
           return await adjustClientCredits(request, env, Number(adjustMatch[1]));
+        }
+
+        const voidMatch = pathname.match(/^\/api\/admin\/clients\/(\d+)\/credits\/(\d+)\/void$/);
+        if (voidMatch && method === "POST") {
+          return await voidClientCredit(env, Number(voidMatch[1]), Number(voidMatch[2]));
         }
 
         return jsonResponse({ error: "Not found." }, 404);

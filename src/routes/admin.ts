@@ -1,5 +1,5 @@
 import type { ClientRow, Env, PackageRow } from "../types";
-import { getActiveBalance, grantCredits, adjustLedgerCredits } from "../db";
+import { getActiveBalance, grantCredits, adjustLedgerCredits, voidLedgerCredits } from "../db";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -138,8 +138,10 @@ export async function grantClientCredits(
   clientId: number,
 ): Promise<Response> {
   const body = await request
-    .json<{ package_id?: number; sessions?: number; note?: string }>()
-    .catch(() => ({}) as { package_id?: number; sessions?: number; note?: string });
+    .json<{ package_id?: number; sessions?: number; note?: string; expires_on?: string }>()
+    .catch(
+      () => ({}) as { package_id?: number; sessions?: number; note?: string; expires_on?: string },
+    );
 
   if (!body.package_id) {
     return jsonResponse({ error: "package_id is required." }, 400);
@@ -159,17 +161,45 @@ export async function grantClientCredits(
     return jsonResponse({ error: "Package not found." }, 404);
   }
 
+  let expiresAt: number | undefined;
+  if (body.expires_on) {
+    const parsed = Date.parse(`${body.expires_on}T23:59:59Z`);
+    if (Number.isNaN(parsed)) {
+      return jsonResponse({ error: "expires_on must be a valid date (YYYY-MM-DD)." }, 400);
+    }
+    expiresAt = Math.floor(parsed / 1000);
+  }
+
   const ledgerId = await grantCredits(env.DB, {
     clientId,
     packageId: pkg.id,
     sessionsGranted: body.sessions ?? pkg.session_count,
     expirationDays: pkg.expiration_days,
+    expiresAt,
     source: "manual_admin",
     note: body.note,
     createdBy: "admin",
   });
 
   return jsonResponse({ ledgerId }, 201);
+}
+
+export async function voidClientCredit(
+  env: Env,
+  clientId: number,
+  ledgerId: number,
+): Promise<Response> {
+  const result = await voidLedgerCredits(env.DB, {
+    ledgerId,
+    clientId,
+    createdBy: "admin",
+  });
+
+  if (!result.ok) {
+    return jsonResponse({ error: "Credit grant not found." }, 404);
+  }
+
+  return jsonResponse({ ok: true });
 }
 
 export async function adjustClientCredits(

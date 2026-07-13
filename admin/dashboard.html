@@ -94,10 +94,49 @@
     <h2>Clients</h2>
     <table class="portal-table" id="clients-table">
       <thead>
-        <tr><th>Email</th><th>Name</th><th>Balance</th><th>Grant credits</th></tr>
+        <tr><th>Email</th><th>Name</th><th>Balance</th><th></th></tr>
       </thead>
       <tbody></tbody>
     </table>
+  </div>
+
+  <div class="portal-card" id="manage-panel" hidden>
+    <h2 id="manage-client-title">Manage credits</h2>
+    <table class="portal-table" id="manage-ledger-table">
+      <thead>
+        <tr><th>Package</th><th>Remaining</th><th>Expires</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="portal-empty" id="manage-ledger-empty" hidden>No credit grants yet.</p>
+
+    <h2 style="margin-top: var(--space-4);">Grant credits</h2>
+    <p class="portal-empty">Assigning a new package always adds a separate grant — it does not replace
+      an existing one. To switch a client to a different package, void the wrong grant above first
+      (already-used sessions from it aren't affected), then grant the correct one here.</p>
+    <form id="grant-form">
+      <div class="portal-row">
+        <div class="portal-field">
+          <label for="grant-package">Package</label>
+          <select id="grant-package"></select>
+        </div>
+        <div class="portal-field">
+          <label for="grant-sessions">Sessions</label>
+          <input type="number" id="grant-sessions" min="0" placeholder="defaults to package count">
+        </div>
+        <div class="portal-field">
+          <label for="grant-expires">Expires on</label>
+          <input type="date" id="grant-expires" placeholder="defaults to package expiration">
+        </div>
+      </div>
+      <div class="portal-field">
+        <label for="grant-note">Note</label>
+        <input type="text" id="grant-note" placeholder="e.g. joined mid-way through a 24-session package, 13 left">
+      </div>
+      <button type="submit" class="portal-button">Grant</button>
+      <button type="button" class="portal-button secondary" id="manage-close">Close</button>
+      <p class="portal-message" id="grant-message"></p>
+    </form>
   </div>
 </div>
 <script src="/admin/admin.js" data-page="dashboard"></script>

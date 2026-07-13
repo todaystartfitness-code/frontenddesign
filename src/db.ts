@@ -22,13 +22,14 @@ export async function grantCredits(
     packageId: number;
     sessionsGranted: number;
     expirationDays: number;
+    expiresAt?: number;
     source: "purchase" | "manual_admin";
     note?: string;
     createdBy?: string;
   },
 ): Promise<number> {
   const now = nowSeconds();
-  const expiresAt = now + params.expirationDays * 86400;
+  const expiresAt = params.expiresAt ?? now + params.expirationDays * 86400;
 
   const result = await db
     .prepare(
@@ -81,4 +82,31 @@ export async function adjustLedgerCredits(
     )
     .bind(params.ledgerId, params.clientId, params.delta, params.reason, params.createdBy ?? null)
     .run();
+}
+
+// Zeroes out a ledger row's remaining balance (e.g. a mis-assigned package)
+// without touching the sessions already deducted from it — those reflect
+// real training that happened. The row (and its transaction history) stays
+// for the audit trail; it just stops being drawable from.
+export async function voidLedgerCredits(
+  db: D1Database,
+  params: { ledgerId: number; clientId: number; createdBy?: string },
+): Promise<{ ok: boolean }> {
+  const row = await db
+    .prepare("SELECT sessions_remaining FROM credit_ledger WHERE id = ? AND client_id = ?")
+    .bind(params.ledgerId, params.clientId)
+    .first<{ sessions_remaining: number }>();
+
+  if (!row) return { ok: false };
+  if (row.sessions_remaining === 0) return { ok: true };
+
+  await adjustLedgerCredits(db, {
+    ledgerId: params.ledgerId,
+    clientId: params.clientId,
+    delta: -row.sessions_remaining,
+    reason: "voided_by_admin",
+    createdBy: params.createdBy,
+  });
+
+  return { ok: true };
 }
