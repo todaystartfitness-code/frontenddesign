@@ -795,10 +795,57 @@
       });
   }
 
+  // --- Google Calendar connection ----------------------------------------
+
+  function loadGoogleStatus() {
+    var statusEl = document.getElementById("google-status");
+    var connectBtn = document.getElementById("google-connect-btn");
+    var disconnectBtn = document.getElementById("google-disconnect-btn");
+
+    return fetch("/api/admin/google/status")
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.connected) {
+          statusEl.className = "portal-message success";
+          statusEl.textContent = "Connected — availability checks your calendar, and bookings sync to it.";
+          connectBtn.hidden = true;
+          disconnectBtn.hidden = false;
+        } else if (!data.configured) {
+          statusEl.className = "portal-message error";
+          statusEl.textContent = "Not configured yet — the GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET secrets need to be added first.";
+          connectBtn.hidden = true;
+          disconnectBtn.hidden = true;
+        } else {
+          statusEl.className = "portal-message";
+          statusEl.textContent = "Not connected.";
+          connectBtn.hidden = false;
+          disconnectBtn.hidden = true;
+        }
+      });
+  }
+
+  document.getElementById("google-disconnect-btn").addEventListener("click", function () {
+    if (!window.confirm("Disconnect Google Calendar? Availability will stop checking your calendar and bookings will no longer sync to it.")) return;
+    fetch("/api/admin/google/disconnect", { method: "POST" }).then(loadGoogleStatus);
+  });
+
+  var googleParam = new URLSearchParams(window.location.search).get("google");
+  if (googleParam === "connected") {
+    window.history.replaceState({}, "", "/admin/dashboard.html");
+  } else if (googleParam === "denied") {
+    window.setTimeout(function () {
+      var statusEl = document.getElementById("google-status");
+      statusEl.className = "portal-message error";
+      statusEl.textContent = "Google connection was denied or cancelled. Try again.";
+    }, 500);
+    window.history.replaceState({}, "", "/admin/dashboard.html");
+  }
+
   loadPackages().then(loadClients);
   loadHours();
   loadSettings();
   loadOverrides();
   loadUpcomingSessions();
   loadCancellations();
+  loadGoogleStatus();
 })();

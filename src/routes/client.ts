@@ -2,6 +2,29 @@ import type { ClientRow, Env, PackageRow, SessionRow } from "../types";
 
 import { adjustLedgerCredits, getActiveBalance, getSoonestExpiringLedger, nowSeconds } from "../db";
 import { computeAvailableSlots, getSettings, isSlotAvailable } from "../availability";
+import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from "../google";
+
+// Calendar mirroring is best-effort: a Google hiccup shouldn't lose a
+// booking that's already validated and stored. Conflicts are prevented at
+// availability-check time (which does fail closed), not at mirror time.
+async function mirrorCreate(
+  env: Env,
+  sessionId: number,
+  startsAt: number,
+  endsAt: number,
+  clientLabel: string,
+): Promise<void> {
+  try {
+    const eventId = await createCalendarEvent(env, { startsAt, endsAt, clientLabel });
+    if (eventId) {
+      await env.DB.prepare("UPDATE sessions SET google_event_id = ? WHERE id = ?")
+        .bind(eventId, sessionId)
+        .run();
+    }
+  } catch (err) {
+    console.error("Google Calendar event create failed:", err);
+  }
+}
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -83,7 +106,7 @@ export async function getAvailability(
   }
 
   const slots = await computeAvailableSlots(
-    env.DB,
+    env,
     dateStr,
     durationMinutes,
     nowSeconds(),
@@ -110,7 +133,7 @@ export async function bookSession(request: Request, env: Env, client: ClientRow)
     return jsonResponse({ error: "That time has already passed." }, 400);
   }
 
-  const available = await isSlotAvailable(env.DB, startsAt, endsAt);
+  const available = await isSlotAvailable(env, startsAt, endsAt);
   if (!available) {
     return jsonResponse({ error: "That time is no longer available. Please pick another slot." }, 409);
   }
@@ -129,6 +152,14 @@ export async function bookSession(request: Request, env: Env, client: ClientRow)
     reason: "session_booked",
     createdBy: "client",
   });
+
+  await mirrorCreate(
+    env,
+    result.meta.last_row_id as number,
+    startsAt,
+    endsAt,
+    client.name || client.email,
+  );
 
   return jsonResponse({ id: result.meta.last_row_id }, 201);
 }
@@ -188,7 +219,7 @@ export async function rescheduleMySession(
     return jsonResponse({ error: "That time has already passed." }, 400);
   }
 
-  const available = await isSlotAvailable(env.DB, newStartsAt, newEndsAt, session.id);
+  const available = await isSlotAvailable(env, newStartsAt, newEndsAt, session.id);
   if (!available) {
     return jsonResponse({ error: "That time is no longer available. Please pick another slot." }, 409);
   }
@@ -196,6 +227,14 @@ export async function rescheduleMySession(
   await env.DB.prepare("UPDATE sessions SET starts_at = ?, ends_at = ? WHERE id = ?")
     .bind(newStartsAt, newEndsAt, session.id)
     .run();
+
+  if (session.google_event_id) {
+    try {
+      await updateCalendarEvent(env, session.google_event_id, newStartsAt, newEndsAt);
+    } catch (err) {
+      console.error("Google Calendar event update failed:", err);
+    }
+  }
 
   return jsonResponse({ ok: true });
 }
@@ -220,6 +259,14 @@ export async function cancelMySession(
   )
     .bind(nowSeconds(), "client_cancelled", session.id)
     .run();
+
+  if (session.google_event_id) {
+    try {
+      await deleteCalendarEvent(env, session.google_event_id);
+    } catch (err) {
+      console.error("Google Calendar event delete failed:", err);
+    }
+  }
 
   return jsonResponse({ ok: true });
 }

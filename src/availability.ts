@@ -1,4 +1,5 @@
-import type { BusinessHoursOverrideRow, BusinessHoursRow, SessionRow } from "./types";
+import type { BusinessHoursOverrideRow, BusinessHoursRow, Env, SessionRow } from "./types";
+import { getBusyIntervals, type BusyInterval } from "./google";
 
 // Arizona (America/Phoenix) does not observe DST — a fixed UTC-7 offset
 // year-round, so no timezone library/DB is needed anywhere in this module.
@@ -96,17 +97,29 @@ async function getBookedSessionsForDay(
   return results ?? [];
 }
 
+// Google Calendar busy intervals for the day (with margin), or [] if the
+// calendar isn't connected yet. Throws on API failure so callers fail closed
+// (better to show no slots than to double-book over a calendar event).
+async function getGoogleBusyForDay(env: Env, dateStr: string): Promise<BusyInterval[]> {
+  const dayStart = phoenixDateToUtcSeconds(dateStr, 0);
+  const busy = await getBusyIntervals(env, dayStart - 10800, dayStart + 86400 + 10800);
+  return busy ?? [];
+}
+
 // Computes open start times for a session of `durationMinutes` on `dateStr`
 // (a YYYY-MM-DD America/Phoenix calendar date). Buffers around existing
 // bookings use the larger of the before/after buffer on both sides (per
-// the "take the larger" business rule), applied uniformly.
+// the "take the larger" business rule), applied uniformly. Google Calendar
+// busy intervals (Lunacal bookings, personal events, anything) block slots
+// the same way — the calendar is the shared source of truth.
 export async function computeAvailableSlots(
-  db: D1Database,
+  env: Env,
   dateStr: string,
   durationMinutes: number,
   now: number = Math.floor(Date.now() / 1000),
   excludeSessionId?: number,
 ): Promise<Slot[]> {
+  const db = env.DB;
   const hours = await getHoursForDate(db, dateStr);
   if (hours.isClosed || hours.openMinute === null || hours.closeMinute === null) return [];
 
@@ -119,12 +132,25 @@ export async function computeAvailableSlots(
   if (lastStartUtc < openUtc) return [];
 
   const booked = await getBookedSessionsForDay(db, dateStr);
+  // The excluded session (a reschedule's own current slot) is also mirrored
+  // on Google Calendar; drop the busy interval that exactly matches it so
+  // its calendar echo doesn't block either.
+  const excluded = excludeSessionId ? booked.find((s) => s.id === excludeSessionId) : undefined;
+  const googleBusy = (await getGoogleBusyForDay(env, dateStr)).filter(
+    (b) => !(excluded && b.start === excluded.starts_at && b.end === excluded.ends_at),
+  );
   const blocked = booked
     .filter((s) => s.id !== excludeSessionId)
     .map((s) => ({
       start: s.starts_at - bufferSeconds,
       end: s.ends_at + bufferSeconds,
-    }));
+    }))
+    .concat(
+      googleBusy.map((b) => ({
+        start: b.start - bufferSeconds,
+        end: b.end + bufferSeconds,
+      })),
+    );
 
   const slots: Slot[] = [];
   const stepSeconds = SLOT_STEP_MINUTES * 60;
@@ -140,12 +166,13 @@ export async function computeAvailableSlots(
 // Re-validates that a specific candidate slot is still free (used at booking
 // time to guard against a race between fetching availability and confirming).
 export async function isSlotAvailable(
-  db: D1Database,
+  env: Env,
   startsAt: number,
   endsAt: number,
   excludeSessionId?: number,
   skipHoursCheck = false,
 ): Promise<boolean> {
+  const db = env.DB;
   const settings = await getSettings(db);
   const bufferSeconds = Math.max(settings.bufferBeforeMinutes, settings.bufferAfterMinutes) * 60;
 
@@ -161,6 +188,18 @@ export async function isSlotAvailable(
   }
 
   const booked = await getBookedSessionsForDay(db, dateStr);
+  const excluded = excludeSessionId ? booked.find((s) => s.id === excludeSessionId) : undefined;
+
+  const googleBusy = (await getGoogleBusyForDay(env, dateStr)).filter(
+    (b) => !(excluded && b.start === excluded.starts_at && b.end === excluded.ends_at),
+  );
+  const googleConflict = googleBusy.some((b) => {
+    const blockedStart = b.start - bufferSeconds;
+    const blockedEnd = b.end + bufferSeconds;
+    return startsAt < blockedEnd && endsAt > blockedStart;
+  });
+  if (googleConflict) return false;
+
   return !booked.some((s) => {
     if (excludeSessionId && s.id === excludeSessionId) return false;
     const blockedStart = s.starts_at - bufferSeconds;

@@ -28,6 +28,12 @@ import {
   upsertBusinessHoursOverride,
 } from "./routes/admin-booking";
 import {
+  googleCallback,
+  googleConnect,
+  googleDisconnect,
+  googleStatus,
+} from "./routes/google-auth";
+import {
   bookSession,
   cancelMySession,
   getAvailability,
@@ -197,6 +203,19 @@ export default {
         const restoreMatch = pathname.match(/^\/api\/admin\/sessions\/(\d+)\/restore-credit$/);
         if (restoreMatch && method === "POST") {
           return await restoreSessionCredit(env, Number(restoreMatch[1]));
+        }
+
+        if (pathname === "/api/admin/google/status" && method === "GET") {
+          return await googleStatus(env);
+        }
+        if (pathname === "/api/admin/google/connect" && method === "GET") {
+          return await googleConnect(env, url.origin);
+        }
+        if (pathname === "/api/admin/google/callback" && method === "GET") {
+          return await googleCallback(env, url);
+        }
+        if (pathname === "/api/admin/google/disconnect" && method === "POST") {
+          return await googleDisconnect(env);
         }
 
         return jsonResponse({ error: "Not found." }, 404);

@@ -1,6 +1,7 @@
 import type { BusinessHoursOverrideRow, BusinessHoursRow, Env, PackageRow, SessionRow } from "../types";
 import { adjustLedgerCredits, getSoonestExpiringLedger, nowSeconds } from "../db";
 import { getSettings, isSlotAvailable } from "../availability";
+import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from "../google";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -220,7 +221,7 @@ export async function adminBookSession(request: Request, env: Env): Promise<Resp
 
   // Admin overrides can book outside business hours, but two clients still
   // can't be booked into overlapping/buffered time.
-  const available = await isSlotAvailable(env.DB, startsAt, endsAt, undefined, true);
+  const available = await isSlotAvailable(env, startsAt, endsAt, undefined, true);
   if (!available) {
     return jsonResponse({ error: "That time conflicts with an existing session." }, 409);
   }
@@ -242,6 +243,25 @@ export async function adminBookSession(request: Request, env: Env): Promise<Resp
     });
   }
 
+  // Best-effort calendar mirror (conflicts are already prevented above).
+  try {
+    const clientRow = await env.DB.prepare("SELECT email, name FROM clients WHERE id = ?")
+      .bind(body.client_id)
+      .first<{ email: string; name: string | null }>();
+    const eventId = await createCalendarEvent(env, {
+      startsAt,
+      endsAt,
+      clientLabel: clientRow?.name || clientRow?.email || "client",
+    });
+    if (eventId) {
+      await env.DB.prepare("UPDATE sessions SET google_event_id = ? WHERE id = ?")
+        .bind(eventId, result.meta.last_row_id as number)
+        .run();
+    }
+  } catch (err) {
+    console.error("Google Calendar event create failed:", err);
+  }
+
   return jsonResponse({ id: result.meta.last_row_id }, 201);
 }
 
@@ -261,7 +281,7 @@ export async function adminRescheduleSession(
   }
 
   const newEndsAt = body.starts_at + session.duration_minutes * 60;
-  const available = await isSlotAvailable(env.DB, body.starts_at, newEndsAt, session.id, true);
+  const available = await isSlotAvailable(env, body.starts_at, newEndsAt, session.id, true);
   if (!available) {
     return jsonResponse({ error: "That time conflicts with an existing session." }, 409);
   }
@@ -269,6 +289,14 @@ export async function adminRescheduleSession(
   await env.DB.prepare("UPDATE sessions SET starts_at = ?, ends_at = ? WHERE id = ?")
     .bind(body.starts_at, newEndsAt, sessionId)
     .run();
+
+  if (session.google_event_id) {
+    try {
+      await updateCalendarEvent(env, session.google_event_id, body.starts_at, newEndsAt);
+    } catch (err) {
+      console.error("Google Calendar event update failed:", err);
+    }
+  }
 
   return jsonResponse({ ok: true });
 }
@@ -302,6 +330,14 @@ export async function adminCancelSession(
       createdBy: "admin",
     });
     await env.DB.prepare("UPDATE sessions SET credit_restored = 1 WHERE id = ?").bind(sessionId).run();
+  }
+
+  if (session.google_event_id) {
+    try {
+      await deleteCalendarEvent(env, session.google_event_id);
+    } catch (err) {
+      console.error("Google Calendar event delete failed:", err);
+    }
   }
 
   return jsonResponse({ ok: true });
