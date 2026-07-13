@@ -18,7 +18,6 @@
   .portal-checkbox { display: flex; align-items: center; gap: 0.4rem; margin-bottom: var(--space-2); }
   .portal-checkbox input { width: auto; }
   .archived-row { opacity: 0.5; }
-  button.link-button { background: none; border: none; color: var(--ink-faint); text-decoration: underline; cursor: pointer; font-size: 0.85rem; padding: 0; }
 </style>
 </head>
 <body class="portal">
@@ -103,7 +102,29 @@
   </div>
 
   <div class="portal-card" id="manage-panel" hidden>
-    <h2 id="manage-client-title">Manage credits</h2>
+    <h2 id="manage-client-title">Manage client</h2>
+
+    <h2>Client info</h2>
+    <form id="client-info-form">
+      <div class="portal-row">
+        <div class="portal-field">
+          <label for="manage-client-email">Email</label>
+          <input type="email" id="manage-client-email" required>
+        </div>
+        <div class="portal-field">
+          <label for="manage-client-name">Name</label>
+          <input type="text" id="manage-client-name">
+        </div>
+        <div class="portal-field">
+          <label for="manage-client-phone">Phone</label>
+          <input type="text" id="manage-client-phone">
+        </div>
+      </div>
+      <button type="submit" class="portal-button">Save client info</button>
+      <p class="portal-message" id="client-info-message"></p>
+    </form>
+
+    <h2 style="margin-top: var(--space-4);">Credits</h2>
     <table class="portal-table" id="manage-ledger-table">
       <thead>
         <tr><th>Package</th><th>Remaining</th><th>Expires</th><th></th></tr>

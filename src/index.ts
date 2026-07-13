@@ -9,6 +9,7 @@ import {
   grantClientCredits,
   listClients,
   listPackages,
+  updateClient,
   updatePackage,
   voidClientCredit,
 } from "./routes/admin";
@@ -84,6 +85,9 @@ export default {
         const clientMatch = pathname.match(/^\/api\/admin\/clients\/(\d+)$/);
         if (clientMatch && method === "GET") {
           return await getClientDetail(env, Number(clientMatch[1]));
+        }
+        if (clientMatch && method === "PATCH") {
+          return await updateClient(request, env, Number(clientMatch[1]));
         }
 
         const grantMatch = pathname.match(/^\/api\/admin\/clients\/(\d+)\/credits$/);

@@ -196,7 +196,7 @@
       var cell = tr.lastElementChild;
       var manageBtn = document.createElement("button");
       manageBtn.className = "link-button";
-      manageBtn.textContent = "Manage credits";
+      manageBtn.textContent = "Manage";
       manageBtn.addEventListener("click", function () { openManagePanel(c); });
       cell.appendChild(manageBtn);
 
@@ -218,17 +218,22 @@
   function openManagePanel(client) {
     currentManagedClientId = client.id;
     document.getElementById("manage-client-title").textContent =
-      "Manage credits — " + client.email;
+      "Manage client — " + client.email;
     renderGrantPackageOptions();
-    loadManageLedger();
+    loadManageClient();
     managePanel.hidden = false;
     managePanel.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function loadManageLedger() {
+  function loadManageClient() {
     return fetch("/api/admin/clients/" + currentManagedClientId)
       .then(function (res) { return res.json(); })
-      .then(function (data) { renderManageLedger(data.ledger); });
+      .then(function (data) {
+        document.getElementById("manage-client-email").value = data.client.email;
+        document.getElementById("manage-client-name").value = data.client.name || "";
+        document.getElementById("manage-client-phone").value = data.client.phone || "";
+        renderManageLedger(data.ledger);
+      });
   }
 
   function renderManageLedger(ledger) {
@@ -266,7 +271,7 @@
             "/api/admin/clients/" + currentManagedClientId + "/credits/" + row.id + "/void",
             { method: "POST" },
           ).then(function () {
-            return Promise.all([loadManageLedger(), loadClients()]);
+            return Promise.all([loadManageClient(), loadClients()]);
           });
         });
         cell.appendChild(voidBtn);
@@ -275,6 +280,30 @@
       tbody.appendChild(tr);
     });
   }
+
+  document.getElementById("client-info-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var messageEl = document.getElementById("client-info-message");
+    var body = {
+      email: document.getElementById("manage-client-email").value,
+      name: document.getElementById("manage-client-name").value,
+      phone: document.getElementById("manage-client-phone").value,
+    };
+
+    fetch("/api/admin/clients/" + currentManagedClientId, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+      .then(function (res) {
+        if (!res.ok) return res.json().then(function (d) { throw new Error(d.error); });
+        setMessage(messageEl, "Client info updated.", "success");
+        return Promise.all([loadManageClient(), loadClients()]);
+      })
+      .catch(function (err) {
+        setMessage(messageEl, err.message || "Could not update client info.", "error");
+      });
+  });
 
   document.getElementById("grant-form").addEventListener("submit", function (e) {
     e.preventDefault();
@@ -300,7 +329,7 @@
         document.getElementById("grant-sessions").value = "";
         document.getElementById("grant-expires").value = "";
         document.getElementById("grant-note").value = "";
-        return Promise.all([loadManageLedger(), loadClients()]);
+        return Promise.all([loadManageClient(), loadClients()]);
       })
       .catch(function (err) {
         setMessage(messageEl, err.message || "Could not grant credits.", "error");

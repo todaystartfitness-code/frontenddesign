@@ -1,10 +1,21 @@
 /* Shared styling for /app and /admin, built on the marketing site's design
-   tokens in styles.css (loaded first). Dark theme only, simple utility
-   panels/forms/tables — no attempt to match the marketing site's motion
+   tokens in styles.css (loaded first). Remaps the base --ink/--surface/
+   --border tokens to the marketing site's light "paper" palette (same
+   trick as .section--paper in styles.css), so global rules like
+   `h1, h2, h3 { color: var(--ink) }` pick it up automatically — with
+   rust-colored buttons/accents for brand consistency. Simple utility
+   panels/forms/tables, no attempt to match the marketing site's motion
    design, just its color/type system, so it reads as the same brand. */
 
 body.portal {
-  background: var(--bg);
+  background: var(--paper);
+  --ink: var(--paper-ink);
+  --ink-muted: var(--paper-muted);
+  --ink-faint: var(--paper-faint);
+  --border: var(--paper-border);
+  --border-strong: var(--paper-border-strong);
+  --surface: var(--paper-surface);
+  --surface-2: #dcd4c1;
   color: var(--ink);
   font-family: var(--font-body);
   min-height: 100vh;
@@ -67,7 +78,7 @@ body.portal {
 .portal-field input {
   width: 100%;
   padding: 0.65rem 0.85rem;
-  background: var(--bg-raised);
+  background: var(--paper);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   color: var(--ink);
@@ -108,8 +119,8 @@ body.portal {
   margin-top: var(--space-2);
 }
 
-.portal-message.error { color: var(--rust-light); }
-.portal-message.success { color: var(--sage); }
+.portal-message.error { color: var(--paper-rust); }
+.portal-message.success { color: var(--paper-sage); }
 
 .portal-table {
   width: 100%;
@@ -134,7 +145,7 @@ body.portal {
 .portal-balance {
   font-family: var(--font-mono);
   font-size: 2.5rem;
-  color: var(--amber);
+  color: var(--paper-rust);
 }
 
 .portal-empty {
@@ -149,3 +160,16 @@ body.portal {
 }
 
 .portal-logout:hover { color: var(--ink); }
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  font-family: var(--font-body);
+}
+
+.link-button:hover { color: var(--ink); }

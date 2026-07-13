@@ -137,6 +137,48 @@ export async function createClient(request: Request, env: Env): Promise<Response
   return jsonResponse({ id: result.meta.last_row_id }, 201);
 }
 
+export async function updateClient(
+  request: Request,
+  env: Env,
+  clientId: number,
+): Promise<Response> {
+  const body = await request
+    .json<{ email?: string; name?: string; phone?: string }>()
+    .catch(() => ({}) as { email?: string; name?: string; phone?: string });
+
+  const existing = await env.DB.prepare("SELECT * FROM clients WHERE id = ? AND role = 'client'")
+    .bind(clientId)
+    .first<ClientRow>();
+  if (!existing) {
+    return jsonResponse({ error: "Client not found." }, 404);
+  }
+
+  let email = existing.email;
+  if (body.email !== undefined) {
+    email = body.email.trim().toLowerCase();
+    if (!EMAIL_RE.test(email)) {
+      return jsonResponse({ error: "A valid email is required." }, 400);
+    }
+    if (email !== existing.email) {
+      const emailTaken = await env.DB.prepare("SELECT id FROM clients WHERE email = ? AND id != ?")
+        .bind(email, clientId)
+        .first();
+      if (emailTaken) {
+        return jsonResponse({ error: "A client with that email already exists." }, 409);
+      }
+    }
+  }
+
+  const name = body.name !== undefined ? body.name || null : existing.name;
+  const phone = body.phone !== undefined ? body.phone || null : existing.phone;
+
+  await env.DB.prepare("UPDATE clients SET email = ?, name = ?, phone = ? WHERE id = ?")
+    .bind(email, name, phone, clientId)
+    .run();
+
+  return jsonResponse({ ok: true });
+}
+
 export async function grantClientCredits(
   request: Request,
   env: Env,
