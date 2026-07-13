@@ -21,6 +21,7 @@ export interface PackageRow {
   session_count: number;
   price_cents: number;
   expiration_days: number;
+  session_duration_minutes: number;
   is_drop_in: number;
   archived: number;
   created_at: number;
@@ -37,4 +38,37 @@ export interface CreditLedgerRow {
   granted_at: number;
   expires_at: number;
   note: string | null;
+}
+
+export interface BusinessHoursRow {
+  day_of_week: number; // 0 = Sunday
+  is_closed: number;
+  open_minute: number | null;
+  close_minute: number | null;
+}
+
+export interface BusinessHoursOverrideRow {
+  date: string; // YYYY-MM-DD, America/Phoenix
+  is_closed: number;
+  open_minute: number | null;
+  close_minute: number | null;
+  note: string | null;
+}
+
+export type SessionStatus = "booked" | "cancelled" | "completed";
+
+export interface SessionRow {
+  id: number;
+  client_id: number;
+  ledger_id: number | null;
+  starts_at: number;
+  ends_at: number;
+  duration_minutes: number;
+  status: SessionStatus;
+  created_by: "client" | "admin";
+  credit_restored: number;
+  cancelled_at: number | null;
+  cancelled_reason: string | null;
+  google_event_id: string | null;
+  created_at: number;
 }

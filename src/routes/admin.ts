@@ -27,12 +27,14 @@ export async function listPackages(env: Env): Promise<Response> {
 export async function createPackage(request: Request, env: Env): Promise<Response> {
   const body = await request.json<Partial<PackageRow>>().catch(() => ({}) as Partial<PackageRow>);
   const { name, session_count, price_cents, expiration_days } = body;
+  const sessionDurationMinutes = body.session_duration_minutes ?? 60;
 
   if (
     !name ||
     typeof session_count !== "number" ||
     typeof price_cents !== "number" ||
-    typeof expiration_days !== "number"
+    typeof expiration_days !== "number" ||
+    typeof sessionDurationMinutes !== "number"
   ) {
     return jsonResponse(
       { error: "name, session_count, price_cents, and expiration_days are required." },
@@ -43,10 +45,10 @@ export async function createPackage(request: Request, env: Env): Promise<Respons
   const isDropIn = body.is_drop_in ? 1 : 0;
 
   const result = await env.DB.prepare(
-    `INSERT INTO packages (name, session_count, price_cents, expiration_days, is_drop_in)
-     VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO packages (name, session_count, price_cents, expiration_days, session_duration_minutes, is_drop_in)
+     VALUES (?, ?, ?, ?, ?, ?)`,
   )
-    .bind(name, session_count, price_cents, expiration_days, isDropIn)
+    .bind(name, session_count, price_cents, expiration_days, sessionDurationMinutes, isDropIn)
     .run();
 
   return jsonResponse({ id: result.meta.last_row_id }, 201);
@@ -71,13 +73,14 @@ export async function updatePackage(
     session_count: body.session_count ?? existing.session_count,
     price_cents: body.price_cents ?? existing.price_cents,
     expiration_days: body.expiration_days ?? existing.expiration_days,
+    session_duration_minutes: body.session_duration_minutes ?? existing.session_duration_minutes,
     is_drop_in: body.is_drop_in !== undefined ? (body.is_drop_in ? 1 : 0) : existing.is_drop_in,
     archived: body.archived !== undefined ? (body.archived ? 1 : 0) : existing.archived,
   };
 
   await env.DB.prepare(
     `UPDATE packages
-     SET name = ?, session_count = ?, price_cents = ?, expiration_days = ?, is_drop_in = ?, archived = ?, updated_at = unixepoch()
+     SET name = ?, session_count = ?, price_cents = ?, expiration_days = ?, session_duration_minutes = ?, is_drop_in = ?, archived = ?, updated_at = unixepoch()
      WHERE id = ?`,
   )
     .bind(
@@ -85,6 +88,7 @@ export async function updatePackage(
       next.session_count,
       next.price_cents,
       next.expiration_days,
+      next.session_duration_minutes,
       next.is_drop_in,
       next.archived,
       packageId,

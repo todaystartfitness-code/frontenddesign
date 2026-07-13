@@ -9,6 +9,31 @@
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/styles.css">
 <link rel="stylesheet" href="/css/portal.css">
+<style>
+  .portal-shell { max-width: 720px; }
+  .slots-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--space-2); }
+  .slot-button {
+    background: var(--paper);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .slot-button:hover { border-color: var(--rust); color: var(--paper-rust); }
+  .status-badge {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+  }
+  .status-badge.booked { background: rgba(84, 99, 76, 0.16); color: var(--paper-sage); }
+  .status-badge.cancelled { background: rgba(156, 67, 36, 0.12); color: var(--paper-rust); }
+</style>
 </head>
 <body class="portal">
 <div class="portal-shell">
@@ -29,6 +54,29 @@
       <tbody></tbody>
     </table>
     <p class="portal-empty" id="credits-empty">No active credits.</p>
+  </div>
+
+  <div class="portal-card">
+    <h2 id="booking-title">Book a session</h2>
+    <div class="portal-field">
+      <label for="booking-date">Date</label>
+      <input type="date" id="booking-date">
+    </div>
+    <button type="button" class="portal-button" id="find-times-btn">Find available times</button>
+    <button type="button" class="portal-button secondary" id="booking-cancel" hidden>Cancel</button>
+    <p class="portal-message" id="booking-message"></p>
+    <div class="slots-grid" id="slots-grid" hidden></div>
+  </div>
+
+  <div class="portal-card">
+    <h2>My sessions</h2>
+    <table class="portal-table" id="sessions-table">
+      <thead>
+        <tr><th>Date</th><th>Time</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="portal-empty" id="sessions-empty" hidden>No sessions yet.</p>
   </div>
 </div>
 <script src="/app/app.js"></script>

@@ -48,6 +48,10 @@
           <label for="pkg-expiration">Expires after (days)</label>
           <input type="number" id="pkg-expiration" min="1" required>
         </div>
+        <div class="portal-field">
+          <label for="pkg-duration">Session length (min)</label>
+          <input type="number" id="pkg-duration" min="1" max="60" value="60" required>
+        </div>
       </div>
       <div class="portal-checkbox">
         <input type="checkbox" id="pkg-dropin">
@@ -63,7 +67,7 @@
     <h2>Packages</h2>
     <table class="portal-table" id="packages-table">
       <thead>
-        <tr><th>Name</th><th>Sessions</th><th>Price</th><th>Expires</th><th>Drop-in</th><th>Active clients</th><th></th></tr>
+        <tr><th>Name</th><th>Sessions</th><th>Length</th><th>Price</th><th>Expires</th><th>Drop-in</th><th>Active clients</th><th></th></tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -160,6 +164,129 @@
       <button type="button" class="portal-button secondary" id="manage-close">Close</button>
       <p class="portal-message" id="grant-message"></p>
     </form>
+  </div>
+
+  <div class="portal-card">
+    <h2>Business hours</h2>
+    <table class="portal-table" id="hours-table">
+      <thead>
+        <tr><th>Day</th><th>Closed</th><th>Open</th><th>Close</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button type="button" class="portal-button" id="save-hours-btn">Save hours</button>
+    <p class="portal-message" id="hours-message"></p>
+  </div>
+
+  <div class="portal-card">
+    <h2>Booking settings</h2>
+    <div class="portal-row">
+      <div class="portal-field">
+        <label for="setting-buffer-before">Buffer before (min)</label>
+        <input type="number" id="setting-buffer-before" min="0">
+      </div>
+      <div class="portal-field">
+        <label for="setting-buffer-after">Buffer after (min)</label>
+        <input type="number" id="setting-buffer-after" min="0">
+      </div>
+      <div class="portal-field">
+        <label for="setting-reschedule-window">Reschedule window (hours)</label>
+        <input type="number" id="setting-reschedule-window" min="0">
+      </div>
+    </div>
+    <button type="button" class="portal-button" id="save-settings-btn">Save settings</button>
+    <p class="portal-message" id="settings-message"></p>
+  </div>
+
+  <div class="portal-card">
+    <h2>Special dates</h2>
+    <p class="portal-empty">Add a one-off closure (holiday) or special hours for a specific date &mdash;
+      it always overrides the weekly schedule for that date.</p>
+    <form id="override-form">
+      <div class="portal-row">
+        <div class="portal-field">
+          <label for="override-date">Date</label>
+          <input type="date" id="override-date" required>
+        </div>
+        <div class="portal-field">
+          <label for="override-open">Open</label>
+          <input type="time" id="override-open">
+        </div>
+        <div class="portal-field">
+          <label for="override-close">Close</label>
+          <input type="time" id="override-close">
+        </div>
+        <div class="portal-field">
+          <label for="override-note">Note</label>
+          <input type="text" id="override-note" placeholder="e.g. Thanksgiving">
+        </div>
+      </div>
+      <div class="portal-checkbox">
+        <input type="checkbox" id="override-closed" checked>
+        <label for="override-closed">Closed all day</label>
+      </div>
+      <button type="submit" class="portal-button">Add / update</button>
+      <p class="portal-message" id="override-message"></p>
+    </form>
+    <table class="portal-table" id="overrides-table">
+      <thead>
+        <tr><th>Date</th><th>Hours</th><th>Note</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="portal-card">
+    <h2>Book a session</h2>
+    <p class="portal-empty">Admin bookings can be placed at any time, including outside business hours.</p>
+    <form id="admin-book-form">
+      <div class="portal-row">
+        <div class="portal-field">
+          <label for="book-client">Client</label>
+          <select id="book-client"></select>
+        </div>
+        <div class="portal-field">
+          <label for="book-date">Date</label>
+          <input type="date" id="book-date" required>
+        </div>
+        <div class="portal-field">
+          <label for="book-time">Time</label>
+          <input type="time" id="book-time" required>
+        </div>
+        <div class="portal-field">
+          <label for="book-duration">Duration (min)</label>
+          <input type="number" id="book-duration" min="1" placeholder="from client's package">
+        </div>
+      </div>
+      <div class="portal-checkbox">
+        <input type="checkbox" id="book-deduct" checked>
+        <label for="book-deduct">Deduct a session credit</label>
+      </div>
+      <button type="submit" class="portal-button">Book session</button>
+      <p class="portal-message" id="admin-book-message"></p>
+    </form>
+  </div>
+
+  <div class="portal-card">
+    <h2>Upcoming sessions</h2>
+    <table class="portal-table" id="upcoming-sessions-table">
+      <thead>
+        <tr><th>Client</th><th>Date</th><th>Time</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="portal-empty" id="upcoming-sessions-empty" hidden>No upcoming sessions.</p>
+  </div>
+
+  <div class="portal-card">
+    <h2>Cancellations</h2>
+    <table class="portal-table" id="cancellations-table">
+      <thead>
+        <tr><th>Client</th><th>Was</th><th>Cancelled by</th><th>Credit</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="portal-empty" id="cancellations-empty" hidden>No cancellations.</p>
   </div>
 </div>
 <script src="/admin/admin.js" data-page="dashboard"></script>

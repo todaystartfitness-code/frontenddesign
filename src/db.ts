@@ -15,6 +15,23 @@ export async function getActiveBalance(db: D1Database, clientId: number): Promis
   return row?.balance ?? 0;
 }
 
+// The credit a booking should draw from: whichever active grant expires soonest.
+export async function getSoonestExpiringLedger(
+  db: D1Database,
+  clientId: number,
+): Promise<{ id: number; package_id: number } | null> {
+  const now = nowSeconds();
+  const row = await db
+    .prepare(
+      `SELECT id, package_id FROM credit_ledger
+       WHERE client_id = ? AND sessions_remaining > 0 AND expires_at > ?
+       ORDER BY expires_at ASC LIMIT 1`,
+    )
+    .bind(clientId, now)
+    .first<{ id: number; package_id: number }>();
+  return row ?? null;
+}
+
 export async function grantCredits(
   db: D1Database,
   params: {

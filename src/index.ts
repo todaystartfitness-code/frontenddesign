@@ -13,7 +13,29 @@ import {
   updatePackage,
   voidClientCredit,
 } from "./routes/admin";
-import { getMe, getMyCredits } from "./routes/client";
+import {
+  adminBookSession,
+  adminCancelSession,
+  adminRescheduleSession,
+  deleteBusinessHoursOverride,
+  getSettingsRoute,
+  listBusinessHours,
+  listBusinessHoursOverrides,
+  listSessions,
+  restoreSessionCredit,
+  updateBusinessHours,
+  updateSettings,
+  upsertBusinessHoursOverride,
+} from "./routes/admin-booking";
+import {
+  bookSession,
+  cancelMySession,
+  getAvailability,
+  getMe,
+  getMyCredits,
+  getMySessions,
+  rescheduleMySession,
+} from "./routes/client";
 
 function isStaticAssetPath(pathname: string): boolean {
   return /\.(js|css|png|jpg|jpeg|svg|gif|ico|webp|json|map|woff2?|ttf)$/i.test(pathname);
@@ -62,6 +84,38 @@ export default {
         return await getMyCredits(env, client);
       }
 
+      // --- Client booking API: /api/app/* ---------------------------------
+      if (pathname.startsWith("/api/app/")) {
+        const client = await getSessionClient(env, request, "app");
+        if (!client) return jsonResponse({ error: "Not authenticated." }, 401);
+
+        if (pathname === "/api/app/availability" && method === "GET") {
+          return await getAvailability(
+            env,
+            client,
+            url.searchParams.get("date"),
+            url.searchParams.get("reschedule_session_id"),
+          );
+        }
+
+        if (pathname === "/api/app/sessions") {
+          if (method === "GET") return await getMySessions(env, client);
+          if (method === "POST") return await bookSession(request, env, client);
+        }
+
+        const rescheduleMatch = pathname.match(/^\/api\/app\/sessions\/(\d+)\/reschedule$/);
+        if (rescheduleMatch && method === "POST") {
+          return await rescheduleMySession(request, env, client, Number(rescheduleMatch[1]));
+        }
+
+        const cancelMatch = pathname.match(/^\/api\/app\/sessions\/(\d+)\/cancel$/);
+        if (cancelMatch && method === "POST") {
+          return await cancelMySession(env, client, Number(cancelMatch[1]));
+        }
+
+        return jsonResponse({ error: "Not found." }, 404);
+      }
+
       // --- Admin API: /api/admin/* ---------------------------------------
       if (pathname.startsWith("/api/admin/")) {
         const admin = await getSessionClient(env, request, "admin");
@@ -103,6 +157,46 @@ export default {
         const voidMatch = pathname.match(/^\/api\/admin\/clients\/(\d+)\/credits\/(\d+)\/void$/);
         if (voidMatch && method === "POST") {
           return await voidClientCredit(env, Number(voidMatch[1]), Number(voidMatch[2]));
+        }
+
+        if (pathname === "/api/admin/business-hours") {
+          if (method === "GET") return await listBusinessHours(env);
+          if (method === "PUT") return await updateBusinessHours(request, env);
+        }
+
+        if (pathname === "/api/admin/business-hours/overrides") {
+          if (method === "GET") return await listBusinessHoursOverrides(env);
+          if (method === "POST") return await upsertBusinessHoursOverride(request, env);
+        }
+
+        const overrideMatch = pathname.match(/^\/api\/admin\/business-hours\/overrides\/(\d{4}-\d{2}-\d{2})$/);
+        if (overrideMatch && method === "DELETE") {
+          return await deleteBusinessHoursOverride(env, overrideMatch[1]);
+        }
+
+        if (pathname === "/api/admin/settings") {
+          if (method === "GET") return await getSettingsRoute(env);
+          if (method === "PUT") return await updateSettings(request, env);
+        }
+
+        if (pathname === "/api/admin/sessions") {
+          if (method === "GET") return await listSessions(env, url);
+          if (method === "POST") return await adminBookSession(request, env);
+        }
+
+        const adminRescheduleMatch = pathname.match(/^\/api\/admin\/sessions\/(\d+)\/reschedule$/);
+        if (adminRescheduleMatch && method === "POST") {
+          return await adminRescheduleSession(request, env, Number(adminRescheduleMatch[1]));
+        }
+
+        const adminCancelMatch = pathname.match(/^\/api\/admin\/sessions\/(\d+)\/cancel$/);
+        if (adminCancelMatch && method === "POST") {
+          return await adminCancelSession(request, env, Number(adminCancelMatch[1]));
+        }
+
+        const restoreMatch = pathname.match(/^\/api\/admin\/sessions\/(\d+)\/restore-credit$/);
+        if (restoreMatch && method === "POST") {
+          return await restoreSessionCredit(env, Number(restoreMatch[1]));
         }
 
         return jsonResponse({ error: "Not found." }, 404);
