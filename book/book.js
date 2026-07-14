@@ -309,7 +309,12 @@
       .then(function (r) {
         if (!r.ok) throw new Error(r.data.error || "Could not complete booking.");
         if (r.data.url) {
-          window.location.href = r.data.url;
+          // Stripe Checkout refuses to render inside an iframe (it sends its
+          // own frame-blocking headers) — when embedded via the popup modal,
+          // this page IS an iframe, so hand the redirect to the top-level
+          // window instead of navigating the iframe itself.
+          var target = window.top !== window.self ? window.top : window;
+          target.location.href = r.data.url;
           return;
         }
         setMessage(document.getElementById("done-message"), r.data.message || "You're booked!", "success");
