@@ -46,12 +46,14 @@ export async function createPackage(request: Request, env: Env): Promise<Respons
   }
 
   const isDropIn = body.is_drop_in ? 1 : 0;
+  const isPublic = body.is_public ? 1 : 0;
+  const requiresPayment = body.requires_payment === undefined ? 1 : body.requires_payment ? 1 : 0;
 
   const result = await env.DB.prepare(
-    `INSERT INTO packages (name, session_count, price_cents, expiration_days, session_duration_minutes, is_drop_in)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO packages (name, session_count, price_cents, expiration_days, session_duration_minutes, is_drop_in, is_public, requires_payment)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(name, session_count, price_cents, expiration_days, sessionDurationMinutes, isDropIn)
+    .bind(name, session_count, price_cents, expiration_days, sessionDurationMinutes, isDropIn, isPublic, requiresPayment)
     .run();
 
   return jsonResponse({ id: result.meta.last_row_id }, 201);
@@ -79,11 +81,14 @@ export async function updatePackage(
     session_duration_minutes: body.session_duration_minutes ?? existing.session_duration_minutes,
     is_drop_in: body.is_drop_in !== undefined ? (body.is_drop_in ? 1 : 0) : existing.is_drop_in,
     archived: body.archived !== undefined ? (body.archived ? 1 : 0) : existing.archived,
+    is_public: body.is_public !== undefined ? (body.is_public ? 1 : 0) : existing.is_public,
+    requires_payment:
+      body.requires_payment !== undefined ? (body.requires_payment ? 1 : 0) : existing.requires_payment,
   };
 
   await env.DB.prepare(
     `UPDATE packages
-     SET name = ?, session_count = ?, price_cents = ?, expiration_days = ?, session_duration_minutes = ?, is_drop_in = ?, archived = ?, updated_at = unixepoch()
+     SET name = ?, session_count = ?, price_cents = ?, expiration_days = ?, session_duration_minutes = ?, is_drop_in = ?, archived = ?, is_public = ?, requires_payment = ?, updated_at = unixepoch()
      WHERE id = ?`,
   )
     .bind(
@@ -94,6 +99,8 @@ export async function updatePackage(
       next.session_duration_minutes,
       next.is_drop_in,
       next.archived,
+      next.is_public,
+      next.requires_payment,
       packageId,
     )
     .run();
@@ -338,9 +345,20 @@ export async function getClientDetail(env: Env, clientId: number): Promise<Respo
     .bind(clientId)
     .all();
 
+  const { results: quizResponses } = await env.DB.prepare(
+    `SELECT r.answer, r.created_at, q.prompt, q.question_type
+     FROM quiz_responses r
+     JOIN quiz_questions q ON q.id = r.question_id
+     WHERE r.client_id = ?
+     ORDER BY q.position ASC`,
+  )
+    .bind(clientId)
+    .all();
+
   return jsonResponse({
     client,
     balance: await getActiveBalance(env.DB, clientId),
     ledger: ledger ?? [],
+    quizResponses: quizResponses ?? [],
   });
 }

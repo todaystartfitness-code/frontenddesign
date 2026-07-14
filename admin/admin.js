@@ -70,6 +70,7 @@
         "<td>" + money(p.price_cents) + "</td>" +
         "<td>" + p.expiration_days + "d</td>" +
         "<td>" + (p.is_drop_in ? "Yes" : "") + "</td>" +
+        "<td>" + (p.is_public ? (p.requires_payment ? "Yes" : "Yes (free)") : "") + "</td>" +
         "<td>" + p.active_grants + "</td>" +
         "<td></td>";
       var actionCell = tr.lastElementChild;
@@ -108,6 +109,8 @@
     document.getElementById("pkg-expiration").value = p.expiration_days;
     document.getElementById("pkg-duration").value = p.session_duration_minutes;
     document.getElementById("pkg-dropin").checked = !!p.is_drop_in;
+    document.getElementById("pkg-public").checked = !!p.is_public;
+    document.getElementById("pkg-requires-payment").checked = p.requires_payment !== 0;
 
     document.getElementById("package-form-title").textContent = "Edit package — " + p.name;
     document.getElementById("package-form-submit").textContent = "Save changes";
@@ -169,6 +172,8 @@
       expiration_days: parseInt(document.getElementById("pkg-expiration").value, 10),
       session_duration_minutes: parseInt(document.getElementById("pkg-duration").value, 10),
       is_drop_in: document.getElementById("pkg-dropin").checked,
+      is_public: document.getElementById("pkg-public").checked,
+      requires_payment: document.getElementById("pkg-requires-payment").checked,
     };
 
     var isEditing = editingPackageId !== null;
@@ -188,6 +193,134 @@
       })
       .catch(function () {
         setMessage(messageEl, isEditing ? "Could not update package." : "Could not add package.", "error");
+      });
+  });
+
+  // --- Assessment quiz builder -------------------------------------------
+
+  var quizQuestions = [];
+  var editingQuizQuestionId = null;
+
+  function updateQuizOptionsVisibility() {
+    var isMultipleChoice = document.getElementById("quiz-type").value === "multiple_choice";
+    document.getElementById("quiz-options-field").hidden = !isMultipleChoice;
+  }
+  document.getElementById("quiz-type").addEventListener("change", updateQuizOptionsVisibility);
+  updateQuizOptionsVisibility();
+
+  function renderQuizQuestions() {
+    var tbody = document.querySelector("#quiz-table tbody");
+    var table = document.getElementById("quiz-table");
+    var empty = document.getElementById("quiz-empty");
+    tbody.innerHTML = "";
+
+    if (quizQuestions.length === 0) {
+      table.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+    table.hidden = false;
+    empty.hidden = true;
+
+    var typeLabels = {
+      multiple_choice: "Multiple choice",
+      short_text: "Short text",
+      scale_1_10: "1-10 scale",
+    };
+
+    quizQuestions.forEach(function (q, i) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>" + (i + 1) + "</td>" +
+        "<td>" + typeLabels[q.question_type] + "</td>" +
+        "<td>" + q.prompt + "</td>" +
+        "<td>" + (q.options ? q.options.join(", ") : "") + "</td>" +
+        "<td></td>";
+      var cell = tr.lastElementChild;
+
+      var editBtn = document.createElement("button");
+      editBtn.className = "link-button";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", function () { enterQuizEditMode(q); });
+      cell.appendChild(editBtn);
+      cell.appendChild(document.createTextNode(" "));
+
+      var deleteBtn = document.createElement("button");
+      deleteBtn.className = "link-button";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.addEventListener("click", function () {
+        fetch("/api/admin/quiz/questions/" + q.id, { method: "DELETE" }).then(loadQuizQuestions);
+      });
+      cell.appendChild(deleteBtn);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function loadQuizQuestions() {
+    return fetch("/api/admin/quiz/questions")
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        quizQuestions = data.questions;
+        renderQuizQuestions();
+      });
+  }
+
+  function enterQuizEditMode(q) {
+    editingQuizQuestionId = q.id;
+    document.getElementById("quiz-type").value = q.question_type;
+    document.getElementById("quiz-prompt").value = q.prompt;
+    document.getElementById("quiz-options").value = q.options ? q.options.join("\n") : "";
+    updateQuizOptionsVisibility();
+    document.getElementById("quiz-form-title").textContent = "Edit question";
+    document.getElementById("quiz-form-submit").textContent = "Save changes";
+    document.getElementById("quiz-form-cancel").hidden = false;
+    document.getElementById("quiz-prompt").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function exitQuizEditMode() {
+    editingQuizQuestionId = null;
+    document.getElementById("quiz-form").reset();
+    updateQuizOptionsVisibility();
+    document.getElementById("quiz-form-title").textContent = "Add a question";
+    document.getElementById("quiz-form-submit").textContent = "Add question";
+    document.getElementById("quiz-form-cancel").hidden = true;
+  }
+
+  document.getElementById("quiz-form-cancel").addEventListener("click", exitQuizEditMode);
+
+  document.getElementById("quiz-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var messageEl = document.getElementById("quiz-message");
+    var questionType = document.getElementById("quiz-type").value;
+    var body = {
+      question_type: questionType,
+      prompt: document.getElementById("quiz-prompt").value,
+    };
+    if (questionType === "multiple_choice") {
+      body.options = document.getElementById("quiz-options").value
+        .split("\n")
+        .map(function (s) { return s.trim(); })
+        .filter(Boolean);
+    }
+
+    var isEditing = editingQuizQuestionId !== null;
+    var url = isEditing ? "/api/admin/quiz/questions/" + editingQuizQuestionId : "/api/admin/quiz/questions";
+    var method = isEditing ? "PATCH" : "POST";
+
+    fetch(url, {
+      method: method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+      .then(function (res) {
+        if (!res.ok) return res.json().then(function (d) { throw new Error(d.error); });
+        setMessage(messageEl, isEditing ? "Question updated." : "Question added.", "success");
+        exitQuizEditMode();
+        return loadQuizQuestions();
+      })
+      .catch(function (err) {
+        setMessage(messageEl, err.message || (isEditing ? "Could not update question." : "Could not add question."), "error");
       });
   });
 
@@ -260,7 +393,28 @@
         document.getElementById("manage-client-name").value = data.client.name || "";
         document.getElementById("manage-client-phone").value = data.client.phone || "";
         renderManageLedger(data.ledger);
+        renderManageQuizResponses(data.quizResponses || []);
       });
+  }
+
+  function renderManageQuizResponses(responses) {
+    var title = document.getElementById("manage-quiz-title");
+    var table = document.getElementById("manage-quiz-table");
+    var tbody = table.querySelector("tbody");
+    tbody.innerHTML = "";
+
+    if (responses.length === 0) {
+      title.hidden = true;
+      table.hidden = true;
+      return;
+    }
+    title.hidden = false;
+    table.hidden = false;
+    responses.forEach(function (r) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + r.prompt + "</td><td>" + r.answer + "</td>";
+      tbody.appendChild(tr);
+    });
   }
 
   function renderManageLedger(ledger) {
@@ -892,4 +1046,5 @@
   loadUpcomingSessions();
   loadCancellations();
   loadGoogleStatus();
+  loadQuizQuestions();
 })();

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book a session | FitStrong Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/portal.css">
+<style>
+  /* Standalone/embeddable: no site nav or footer, tighter shell, sized to
+     look good inside an <iframe> as well as a full page. */
+  body.portal { max-width: 640px; padding: var(--space-3) var(--space-2); }
+  .portal-shell { max-width: 100%; }
+  .book-step { display: none; }
+  .book-step.active { display: block; }
+  .book-progress {
+    font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-muted); margin-bottom: var(--space-2);
+  }
+  .quiz-question { margin-bottom: var(--space-3); }
+  .quiz-question label.quiz-prompt {
+    display: block; font-weight: 600; margin-bottom: 0.5rem;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .quiz-option { display: flex; align-items: center; gap: 0.5rem; }
+  .quiz-option input { width: auto; }
+  .package-list { display: flex; flex-direction: column; gap: 0.6rem; }
+  .package-option {
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem; cursor: pointer; background: var(--paper);
+  }
+  .package-option:hover, .package-option.selected { border-color: var(--rust); }
+  .package-option.selected { background: rgba(196, 85, 46, 0.08); }
+  .package-option .package-name { font-weight: 600; }
+  .package-option .package-price { font-family: var(--font-mono); color: var(--paper-rust); }
+  .booking-layout { display: flex; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-2); }
+  .cal { flex: 1 1 280px; min-width: 240px; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); }
+  .cal-head .cal-month { font-weight: 600; }
+  .cal-nav {
+    background: none; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+    width: 2rem; height: 2rem; cursor: pointer; color: var(--ink); font-size: 1rem; line-height: 1;
+  }
+  .cal-nav:disabled { opacity: 0.35; cursor: default; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; }
+  .cal-dow {
+    text-align: center; font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--ink-muted); padding: 0.3rem 0;
+  }
+  .cal-day {
+    aspect-ratio: 1; border: none; border-radius: var(--radius-sm); background: none;
+    font-family: var(--font-body); font-size: 0.9rem; color: var(--ink); cursor: pointer;
+  }
+  .cal-day.open { background: rgba(196, 85, 46, 0.10); font-weight: 600; }
+  .cal-day.open:hover { background: rgba(196, 85, 46, 0.22); }
+  .cal-day:disabled { color: var(--ink-faint); cursor: default; background: none; font-weight: 400; }
+  .cal-day.selected { background: var(--rust); color: var(--on-rust); }
+  .day-slots { flex: 1 1 180px; min-width: 160px; }
+  .day-slots h3 {
+    font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-muted); margin: 0 0 var(--space-2);
+  }
+  .slots-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 280px; overflow-y: auto; }
+  .slot-button {
+    background: var(--paper); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+    padding: 0.6rem 0.85rem; font-family: var(--font-mono); font-size: 0.9rem; cursor: pointer;
+    color: var(--ink); text-align: center;
+  }
+  .slot-button:hover { border-color: var(--rust); color: var(--paper-rust); }
+  .book-nav { display: flex; justify-content: space-between; margin-top: var(--space-3); }
+</style>
+</head>
+<body class="portal">
+<div class="portal-shell">
+  <div class="portal-header">
+    <h1>FitStrong Club</h1>
+    <span class="eyebrow">Book a Session</span>
+  </div>
+
+  <div class="portal-card">
+    <p class="book-progress" id="book-progress"></p>
+
+    <div class="book-step" id="step-quiz">
+      <h2>A few quick questions</h2>
+      <div id="quiz-questions"></div>
+      <div class="book-nav">
+        <span></span>
+        <button type="button" class="portal-button" id="quiz-continue">Continue</button>
+      </div>
+      <p class="portal-message" id="quiz-message"></p>
+    </div>
+
+    <div class="book-step" id="step-package">
+      <h2>Choose an option</h2>
+      <div class="package-list" id="package-list"></div>
+      <p class="portal-message" id="package-step-message"></p>
+    </div>
+
+    <div class="book-step" id="step-calendar">
+      <h2 id="calendar-step-title">Pick a time</h2>
+      <div class="booking-layout">
+        <div class="cal">
+          <div class="cal-head">
+            <button type="button" class="cal-nav" id="cal-prev" aria-label="Previous month">&lsaquo;</button>
+            <span class="cal-month" id="cal-month-label"></span>
+            <button type="button" class="cal-nav" id="cal-next" aria-label="Next month">&rsaquo;</button>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div class="day-slots">
+          <h3 id="day-slots-title">Pick a date</h3>
+          <div class="slots-list" id="slots-grid"></div>
+        </div>
+      </div>
+      <div class="book-nav">
+        <button type="button" class="portal-button secondary" id="calendar-back">Back</button>
+        <span></span>
+      </div>
+    </div>
+
+    <div class="book-step" id="step-contact">
+      <h2>Your info</h2>
+      <form id="contact-form">
+        <div class="portal-field">
+          <label for="contact-name">Name</label>
+          <input type="text" id="contact-name" required>
+        </div>
+        <div class="portal-field">
+          <label for="contact-email">Email</label>
+          <input type="email" id="contact-email" required>
+        </div>
+        <div class="portal-field">
+          <label for="contact-phone">Phone (optional — get texts instead of email)</label>
+          <input type="text" id="contact-phone" placeholder="(555) 555-5555">
+        </div>
+        <div class="book-nav">
+          <button type="button" class="portal-button secondary" id="contact-back">Back</button>
+          <button type="submit" class="portal-button" id="contact-submit">Confirm booking</button>
+        </div>
+        <p class="portal-message" id="contact-message"></p>
+      </form>
+    </div>
+
+    <div class="book-step" id="step-done">
+      <h2>You're all set</h2>
+      <p class="portal-message success" id="done-message"></p>
+    </div>
+  </div>
+</div>
+<script src="/book/book.js"></script>
+</body>
+</html>

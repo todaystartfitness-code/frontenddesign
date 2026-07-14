@@ -57,6 +57,14 @@
         <input type="checkbox" id="pkg-dropin">
         <label for="pkg-dropin">This is the single-session drop-in price</label>
       </div>
+      <div class="portal-checkbox">
+        <input type="checkbox" id="pkg-public">
+        <label for="pkg-public">List publicly on the /book widget</label>
+      </div>
+      <div class="portal-checkbox">
+        <input type="checkbox" id="pkg-requires-payment" checked>
+        <label for="pkg-requires-payment">Requires payment (uncheck for a free consultation/offer)</label>
+      </div>
       <button type="submit" class="portal-button" id="package-form-submit">Add package</button>
       <button type="button" class="portal-button secondary" id="package-form-cancel" hidden>Cancel</button>
       <p class="portal-message" id="package-message"></p>
@@ -67,10 +75,48 @@
     <h2>Packages</h2>
     <table class="portal-table" id="packages-table">
       <thead>
-        <tr><th>Name</th><th>Sessions</th><th>Length</th><th>Price</th><th>Expires</th><th>Drop-in</th><th>Active clients</th><th></th></tr>
+        <tr><th>Name</th><th>Sessions</th><th>Length</th><th>Price</th><th>Expires</th><th>Drop-in</th><th>Public</th><th>Active clients</th><th></th></tr>
       </thead>
       <tbody></tbody>
     </table>
+  </div>
+
+  <div class="portal-card">
+    <h2>Assessment quiz</h2>
+    <p class="portal-empty">Shown to prospects on the public /book widget before the package/payment step.
+      Leave empty to skip the quiz entirely. Answers are saved and shown on each client's Manage panel.</p>
+    <table class="portal-table" id="quiz-table">
+      <thead>
+        <tr><th>#</th><th>Type</th><th>Question</th><th>Options</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="portal-empty" id="quiz-empty" hidden>No quiz questions yet.</p>
+
+    <h2 id="quiz-form-title" style="margin-top: var(--space-4);">Add a question</h2>
+    <form id="quiz-form">
+      <div class="portal-row">
+        <div class="portal-field">
+          <label for="quiz-type">Type</label>
+          <select id="quiz-type">
+            <option value="multiple_choice">Multiple choice</option>
+            <option value="short_text">Short text</option>
+            <option value="scale_1_10">1-10 scale</option>
+          </select>
+        </div>
+        <div class="portal-field" style="flex: 2;">
+          <label for="quiz-prompt">Question</label>
+          <input type="text" id="quiz-prompt" required placeholder="What's your main fitness goal?">
+        </div>
+      </div>
+      <div class="portal-field" id="quiz-options-field">
+        <label for="quiz-options">Options (one per line, 2-6)</label>
+        <textarea id="quiz-options" rows="3" placeholder="Lose weight&#10;Build strength&#10;Train for an event"></textarea>
+      </div>
+      <button type="submit" class="portal-button" id="quiz-form-submit">Add question</button>
+      <button type="button" class="portal-button secondary" id="quiz-form-cancel" hidden>Cancel</button>
+      <p class="portal-message" id="quiz-message"></p>
+    </form>
   </div>
 
   <div class="portal-card">
@@ -128,6 +174,14 @@
       <button type="button" class="portal-button secondary" id="send-login-link-btn">Email them a login link</button>
       <p class="portal-message" id="client-info-message"></p>
     </form>
+
+    <h2 style="margin-top: var(--space-4);" id="manage-quiz-title" hidden>Assessment quiz answers</h2>
+    <table class="portal-table" id="manage-quiz-table" hidden>
+      <thead>
+        <tr><th>Question</th><th>Answer</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
     <h2 style="margin-top: var(--space-4);">Credits</h2>
     <table class="portal-table" id="manage-ledger-table">

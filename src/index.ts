@@ -52,6 +52,19 @@ import {
   updateMyPhone,
 } from "./routes/client";
 import { sendUpcomingReminders } from "./reminders";
+import {
+  createQuizQuestion,
+  deleteQuizQuestion,
+  listQuizQuestions,
+  reorderQuizQuestions,
+  updateQuizQuestion,
+} from "./routes/admin-quiz";
+import {
+  getPublicAvailability,
+  listPublicPackages,
+  listPublicQuiz,
+  submitPublicBooking,
+} from "./routes/public";
 
 function isStaticAssetPath(pathname: string): boolean {
   return /\.(js|css|png|jpg|jpeg|svg|gif|ico|webp|json|map|woff2?|ttf)$/i.test(pathname);
@@ -261,6 +274,48 @@ export default {
           return await googleDisconnect(env);
         }
 
+        if (pathname === "/api/admin/quiz/questions") {
+          if (method === "GET") return await listQuizQuestions(env);
+          if (method === "POST") return await createQuizQuestion(request, env);
+        }
+
+        if (pathname === "/api/admin/quiz/questions/reorder" && method === "PUT") {
+          return await reorderQuizQuestions(request, env);
+        }
+
+        const quizQuestionMatch = pathname.match(/^\/api\/admin\/quiz\/questions\/(\d+)$/);
+        if (quizQuestionMatch && method === "PATCH") {
+          return await updateQuizQuestion(request, env, Number(quizQuestionMatch[1]));
+        }
+        if (quizQuestionMatch && method === "DELETE") {
+          return await deleteQuizQuestion(env, Number(quizQuestionMatch[1]));
+        }
+
+        return jsonResponse({ error: "Not found." }, 404);
+      }
+
+      // --- Public booking API: /api/public/* (no auth — used by the /book
+      // widget for prospects who don't have an account yet) ----------------
+      if (pathname.startsWith("/api/public/")) {
+        if (pathname === "/api/public/quiz" && method === "GET") {
+          return await listPublicQuiz(env);
+        }
+        if (pathname === "/api/public/packages" && method === "GET") {
+          return await listPublicPackages(env);
+        }
+        if (pathname === "/api/public/month" && method === "GET") {
+          return await getMonthOpenDays(env, url.searchParams.get("month"));
+        }
+        if (pathname === "/api/public/availability" && method === "GET") {
+          return await getPublicAvailability(
+            env,
+            url.searchParams.get("package_id"),
+            url.searchParams.get("date"),
+          );
+        }
+        if (pathname === "/api/public/book" && method === "POST") {
+          return await submitPublicBooking(request, env, url.origin);
+        }
         return jsonResponse({ error: "Not found." }, 404);
       }
 

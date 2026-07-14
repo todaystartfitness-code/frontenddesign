@@ -31,8 +31,29 @@ export interface PackageRow {
   session_duration_minutes: number;
   is_drop_in: number;
   archived: number;
+  is_public: number;
+  requires_payment: number;
   created_at: number;
   updated_at: number;
+}
+
+export type QuizQuestionType = "multiple_choice" | "short_text" | "scale_1_10";
+
+export interface QuizQuestionRow {
+  id: number;
+  position: number;
+  question_type: QuizQuestionType;
+  prompt: string;
+  options: string | null; // JSON array of strings, multiple_choice only
+  created_at: number;
+}
+
+export interface QuizResponseRow {
+  id: number;
+  client_id: number;
+  question_id: number;
+  answer: string;
+  created_at: number;
 }
 
 export interface CreditLedgerRow {

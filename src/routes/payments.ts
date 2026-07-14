@@ -1,8 +1,11 @@
 import type { ClientRow, Env, PackageRow } from "../types";
-import { grantCredits, nowSeconds } from "../db";
+import { adjustLedgerCredits, grantCredits, nowSeconds } from "../db";
 import { isSlotAvailable } from "../availability";
 import { createCheckoutSession, isStripeConfigured, verifyWebhook } from "../stripe";
 import { createCalendarEvent } from "../google";
+import { sendPublicBookingConfirmation } from "./public";
+import { notifyAdmin } from "../notify";
+import { formatPhoenixDateTime } from "../format";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -149,7 +152,7 @@ export async function stripeWebhook(request: Request, env: Env): Promise<Respons
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as { id: string };
-    await fulfillPurchase(env, session.id);
+    await fulfillPurchase(env, session.id, new URL(request.url).origin);
   } else if (event.type === "checkout.session.expired") {
     const session = event.data.object as { id: string };
     await expirePurchase(env, session.id);
@@ -158,7 +161,7 @@ export async function stripeWebhook(request: Request, env: Env): Promise<Respons
   return jsonResponse({ received: true });
 }
 
-async function fulfillPurchase(env: Env, checkoutSessionId: string): Promise<void> {
+async function fulfillPurchase(env: Env, checkoutSessionId: string, origin: string): Promise<void> {
   // Idempotent: webhooks can be delivered more than once.
   const purchase = await env.DB.prepare(
     "SELECT * FROM purchases WHERE stripe_checkout_session_id = ? AND status = 'pending'",
@@ -194,6 +197,55 @@ async function fulfillPurchase(env: Env, checkoutSessionId: string): Promise<voi
     )
       .bind(ledgerId, purchase.id)
       .run();
+
+    // Public-booking-widget purchases also carry a held slot to book, on top
+    // of the credit grant a plain "buy more credits" purchase would do.
+    if (purchase.slot_starts_at !== null && purchase.slot_duration_minutes !== null) {
+      const startsAt = purchase.slot_starts_at;
+      const durationMinutes = purchase.slot_duration_minutes;
+      const endsAt = startsAt + durationMinutes * 60;
+
+      const result = await env.DB.prepare(
+        `INSERT INTO sessions (client_id, ledger_id, starts_at, ends_at, duration_minutes, status, created_by)
+         VALUES (?, ?, ?, ?, ?, 'booked', 'client')`,
+      )
+        .bind(purchase.client_id, ledgerId, startsAt, endsAt, durationMinutes)
+        .run();
+      const sessionId = result.meta.last_row_id as number;
+
+      await adjustLedgerCredits(env.DB, {
+        ledgerId,
+        clientId: purchase.client_id,
+        delta: -1,
+        reason: "session_booked_public",
+        createdBy: "public",
+      });
+      await env.DB.prepare("UPDATE purchases SET session_id = ? WHERE id = ?").bind(sessionId, purchase.id).run();
+      await env.DB.prepare("DELETE FROM slot_holds WHERE purchase_id = ?").bind(purchase.id).run();
+
+      try {
+        const clientRow = await env.DB.prepare("SELECT * FROM clients WHERE id = ?")
+          .bind(purchase.client_id)
+          .first<ClientRow>();
+        const eventId = await createCalendarEvent(env, {
+          startsAt,
+          endsAt,
+          clientLabel: `${clientRow?.name || clientRow?.email || "client"} (public booking)`,
+        });
+        if (eventId) {
+          await env.DB.prepare("UPDATE sessions SET google_event_id = ? WHERE id = ?").bind(eventId, sessionId).run();
+        }
+        if (clientRow) {
+          await sendPublicBookingConfirmation(env, clientRow, pkg, startsAt, origin);
+          await notifyAdmin(
+            env,
+            `New public booking: ${clientRow.name || clientRow.email} booked ${pkg.name} for ${formatPhoenixDateTime(startsAt)}.`,
+          );
+        }
+      } catch (err) {
+        console.error("Public booking fulfillment follow-up failed:", err);
+      }
+    }
     return;
   }
 

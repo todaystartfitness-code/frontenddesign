@@ -79,7 +79,9 @@ body.portal {
   margin-bottom: 0.35rem;
 }
 
-.portal-field input {
+.portal-field input,
+.portal-field select,
+.portal-field textarea {
   width: 100%;
   padding: 0.65rem 0.85rem;
   background: var(--paper);
@@ -90,7 +92,13 @@ body.portal {
   font-size: 0.95rem;
 }
 
-.portal-field input:focus {
+.portal-field textarea {
+  resize: vertical;
+}
+
+.portal-field input:focus,
+.portal-field select:focus,
+.portal-field textarea:focus {
   outline: 2px solid var(--rust-light);
   outline-offset: 1px;
 }
