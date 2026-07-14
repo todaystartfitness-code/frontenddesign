@@ -315,7 +315,11 @@
   var params = new URLSearchParams(window.location.search);
   var bookedParam = params.get("booked");
   var cancelledParam = params.get("cancelled");
-  preselectedPackageId = params.get("package") ? Number(params.get("package")) : null;
+  // Accepts either a numeric package id or an exact (case-insensitive)
+  // package name, e.g. ?package=6 or ?package=Thai%20Bodywork — the latter
+  // lets a marketing-site button reference an offer without needing to know
+  // its id, and keeps working if the id ever changes.
+  preselectedPackageId = params.get("package") || null;
 
   if (params.get("embed") === "modal") {
     document.body.classList.add("embed-modal");
@@ -339,7 +343,10 @@
       packages = results[1].packages || [];
 
       if (preselectedPackageId) {
-        selectedPackage = packages.filter(function (p) { return p.id === preselectedPackageId; })[0] || null;
+        var needle = String(preselectedPackageId).toLowerCase();
+        selectedPackage = packages.filter(function (p) {
+          return String(p.id) === needle || p.name.toLowerCase() === needle;
+        })[0] || null;
         if (!selectedPackage) preselectedPackageId = null; // fall back to picker if invalid/not public
         else updateOfferHeader();
       }
