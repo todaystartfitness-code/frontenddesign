@@ -761,6 +761,88 @@ section[id], article[id] {
 }
 
 /* ==========================================================================
+   Why This Matters
+   ========================================================================== */
+.why-matters {
+  position: relative;
+  padding: var(--space-7) 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 900px 520px at 50% 0%, rgba(219, 165, 76, 0.1), transparent 65%),
+    var(--bg);
+}
+.why-matters-body { max-width: 68ch; }
+.why-matters-body .video-row--single { margin-top: var(--space-5); }
+
+.stat-callout {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  margin: var(--space-5) 0;
+  padding: var(--space-4);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.stat-callout-number {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+  line-height: 1;
+  color: var(--rust-light);
+  background: rgba(196, 85, 46, 0.14);
+  padding: 0.25em 0.7em;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.stat-callout-label {
+  margin: 0;
+  max-width: 40ch;
+  color: var(--ink-muted);
+  font-size: 1rem;
+}
+@media (max-width: 640px) {
+  .stat-callout { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+}
+
+.why-matters-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+.why-matters-list li {
+  position: relative;
+  padding-left: 1.5em;
+  color: var(--ink-muted);
+}
+.why-matters-list li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.5em;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  background: var(--rust-light);
+  transform: rotate(45deg);
+}
+
+/* Same visual language as the Tagline rotator's phrases (bold, italic, amber,
+   soft glow) but static — this line doesn't rotate, so it skips the grid/
+   opacity mechanics that component needs. */
+.section-tagline {
+  margin-top: var(--space-5);
+  font-family: var(--font-headline);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  font-size: clamp(1.3rem, 3vw, 1.7rem);
+  color: var(--amber);
+  text-shadow: 0 0 40px rgba(219, 165, 76, 0.35);
+}
+
+/* ==========================================================================
    Tagline rotator
    ========================================================================== */
 .tagline {
