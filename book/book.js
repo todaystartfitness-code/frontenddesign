@@ -45,13 +45,19 @@
   var selectedDate = null;
   var selectedSlot = null;
 
-  var stepOrder = []; // computed once quiz + packages are loaded
+  // Package first, then time, then (if this offer needs it) the
+  // assessment, then contact/checkout — recomputed once a package is
+  // known, since whether the quiz applies depends on which one.
+  var stepOrder = [];
 
   function computeStepOrder() {
     stepOrder = [];
-    if (quizQuestions.length > 0) stepOrder.push("quiz");
     if (!preselectedPackageId) stepOrder.push("package");
-    stepOrder.push("calendar", "contact", "done");
+    stepOrder.push("calendar");
+    if (selectedPackage && selectedPackage.requires_quiz && quizQuestions.length > 0) {
+      stepOrder.push("quiz");
+    }
+    stepOrder.push("contact", "done");
   }
 
   var currentStepIndex = 0;
@@ -153,7 +159,11 @@
     selectedPackage = p;
     document.querySelectorAll(".package-option").forEach(function (el) { el.classList.remove("selected"); });
     updateOfferHeader();
-    nextStep();
+    // Whether the quiz step applies depends on the package just chosen, so
+    // the step order can only be finalized now. "package" (when present) is
+    // always first, so the step right after it is always "calendar".
+    computeStepOrder();
+    showStep("calendar");
   }
 
   function updateOfferHeader() {
@@ -360,7 +370,9 @@
       showStep(firstStep);
 
       if (cancelledParam === "1") {
-        var msgEl = firstStep === "quiz" ? document.getElementById("quiz-message") : document.getElementById("package-step-message");
+        var msgEl = firstStep === "calendar"
+          ? document.getElementById("calendar-message")
+          : document.getElementById("package-step-message");
         setMessage(msgEl, "Checkout was cancelled — nothing was charged. Pick a time to try again.");
         window.history.replaceState({}, "", "/book/");
       }

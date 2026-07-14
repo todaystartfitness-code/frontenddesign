@@ -112,6 +112,7 @@
     document.getElementById("pkg-dropin").checked = !!p.is_drop_in;
     document.getElementById("pkg-public").checked = !!p.is_public;
     document.getElementById("pkg-requires-payment").checked = p.requires_payment !== 0;
+    document.getElementById("pkg-requires-quiz").checked = p.requires_quiz !== 0;
     document.getElementById("pkg-description").value = p.description || "";
 
     document.getElementById("package-form-title").textContent = "Edit package — " + p.name;
@@ -176,6 +177,7 @@
       is_drop_in: document.getElementById("pkg-dropin").checked,
       is_public: document.getElementById("pkg-public").checked,
       requires_payment: document.getElementById("pkg-requires-payment").checked,
+      requires_quiz: document.getElementById("pkg-requires-quiz").checked,
       description: document.getElementById("pkg-description").value,
     };
 
