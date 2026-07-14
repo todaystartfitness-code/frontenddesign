@@ -50,7 +50,7 @@
         </div>
         <div class="portal-field">
           <label for="pkg-duration">Session length (min)</label>
-          <input type="number" id="pkg-duration" min="1" max="60" value="60" required>
+          <input type="number" id="pkg-duration" min="1" max="240" value="60" required>
         </div>
       </div>
       <div class="portal-checkbox">
@@ -217,7 +217,14 @@
         <label for="setting-reschedule-window">Reschedule window (hours)</label>
         <input type="number" id="setting-reschedule-window" min="0">
       </div>
+      <div class="portal-field">
+        <label for="setting-closing-buffer">Closing buffer (min)</label>
+        <input type="number" id="setting-closing-buffer" min="0">
+      </div>
     </div>
+    <p class="portal-empty">Closing buffer: the minimum time that must remain before closing for a
+      session to be booked, even if the session itself is shorter. Sessions at least this long
+      already leave that much room on their own.</p>
     <button type="button" class="portal-button" id="save-settings-btn">Save settings</button>
     <p class="portal-message" id="settings-message"></p>
   </div>

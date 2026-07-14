@@ -34,9 +34,12 @@ function dayOfWeekForDate(dateStr: string): number {
   return new Date(`${dateStr}T00:00:00Z`).getUTCDay();
 }
 
-export async function getSettings(
-  db: D1Database,
-): Promise<{ bufferBeforeMinutes: number; bufferAfterMinutes: number; rescheduleWindowHours: number }> {
+export async function getSettings(db: D1Database): Promise<{
+  bufferBeforeMinutes: number;
+  bufferAfterMinutes: number;
+  rescheduleWindowHours: number;
+  closingBufferMinutes: number;
+}> {
   const { results } = await db.prepare("SELECT key, value FROM settings").all<{
     key: string;
     value: string;
@@ -48,6 +51,11 @@ export async function getSettings(
     bufferBeforeMinutes: Number(map.buffer_before_minutes ?? 15),
     bufferAfterMinutes: Number(map.buffer_after_minutes ?? 30),
     rescheduleWindowHours: Number(map.reschedule_window_hours ?? 24),
+    // Minimum minutes that must remain before closing when a session is
+    // shorter than this — e.g. a 30-min session still can't be booked in the
+    // last 60 minutes of the day. Sessions at least this long already leave
+    // that much room via their own duration, so this only affects short ones.
+    closingBufferMinutes: Number(map.closing_buffer_minutes ?? 60),
   };
 }
 
@@ -145,7 +153,8 @@ export async function computeAvailableSlots(
 
   const openUtc = phoenixDateToUtcSeconds(dateStr, hours.openMinute);
   const closeUtc = phoenixDateToUtcSeconds(dateStr, hours.closeMinute);
-  const lastStartUtc = closeUtc - durationMinutes * 60;
+  const minGapMinutes = Math.max(durationMinutes, settings.closingBufferMinutes);
+  const lastStartUtc = closeUtc - minGapMinutes * 60;
   if (lastStartUtc < openUtc) return [];
 
   const booked = await getBookedSessionsForDay(db, dateStr);
@@ -202,7 +211,9 @@ export async function isSlotAvailable(
 
     const openUtc = phoenixDateToUtcSeconds(dateStr, hours.openMinute);
     const closeUtc = phoenixDateToUtcSeconds(dateStr, hours.closeMinute);
-    if (startsAt < openUtc || endsAt > closeUtc) return false;
+    const durationMinutes = Math.round((endsAt - startsAt) / 60);
+    const minGapMinutes = Math.max(durationMinutes, settings.closingBufferMinutes);
+    if (startsAt < openUtc || startsAt > closeUtc - minGapMinutes * 60) return false;
   }
 
   const booked = await getBookedSessionsForDay(db, dateStr);

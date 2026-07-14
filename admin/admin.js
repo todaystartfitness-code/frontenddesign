@@ -519,6 +519,7 @@
         document.getElementById("setting-buffer-before").value = data.bufferBeforeMinutes;
         document.getElementById("setting-buffer-after").value = data.bufferAfterMinutes;
         document.getElementById("setting-reschedule-window").value = data.rescheduleWindowHours;
+        document.getElementById("setting-closing-buffer").value = data.closingBufferMinutes;
         document.getElementById("setting-admin-phone").value = data.adminPhoneNumber || "";
       });
   }
@@ -546,6 +547,7 @@
       buffer_before_minutes: parseInt(document.getElementById("setting-buffer-before").value, 10),
       buffer_after_minutes: parseInt(document.getElementById("setting-buffer-after").value, 10),
       reschedule_window_hours: parseInt(document.getElementById("setting-reschedule-window").value, 10),
+      closing_buffer_minutes: parseInt(document.getElementById("setting-closing-buffer").value, 10),
     };
 
     fetch("/api/admin/settings", {

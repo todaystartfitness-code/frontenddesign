@@ -120,6 +120,7 @@ export async function updateSettings(request: Request, env: Env): Promise<Respon
       buffer_before_minutes?: number;
       buffer_after_minutes?: number;
       reschedule_window_hours?: number;
+      closing_buffer_minutes?: number;
       admin_phone_number?: string | null;
     }>()
     .catch(
@@ -128,6 +129,7 @@ export async function updateSettings(request: Request, env: Env): Promise<Respon
           buffer_before_minutes?: number;
           buffer_after_minutes?: number;
           reschedule_window_hours?: number;
+          closing_buffer_minutes?: number;
           admin_phone_number?: string | null;
         },
     );
@@ -136,6 +138,7 @@ export async function updateSettings(request: Request, env: Env): Promise<Respon
     ["buffer_before_minutes", body.buffer_before_minutes],
     ["buffer_after_minutes", body.buffer_after_minutes],
     ["reschedule_window_hours", body.reschedule_window_hours],
+    ["closing_buffer_minutes", body.closing_buffer_minutes],
   ];
 
   for (const [key, value] of updates) {
