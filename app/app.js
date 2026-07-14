@@ -29,42 +29,11 @@
 
   var balanceEl = document.getElementById("balance");
   if (balanceEl) {
-    fetch("/api/me")
-      .then(function (res) {
-        if (res.status === 401) {
-          window.location.href = "/app/";
-          return null;
-        }
-        return res.json();
-      })
-      .then(function () { return fetch("/api/me/credits"); })
-      .then(function (res) { return res && res.json(); })
-      .then(function (data) {
-        if (!data) return;
-        balanceEl.textContent = data.balance;
-
-        var table = document.getElementById("credits-table");
-        var empty = document.getElementById("credits-empty");
-        var tbody = table.querySelector("tbody");
-
-        if (data.ledger.length === 0) {
-          empty.hidden = false;
-          table.hidden = true;
-          return;
-        }
-
-        empty.hidden = true;
-        table.hidden = false;
-        data.ledger.forEach(function (row) {
-          var tr = document.createElement("tr");
-          var expires = new Date(row.expires_at * 1000).toLocaleDateString();
-          tr.innerHTML =
-            "<td>" + row.package_name + "</td>" +
-            "<td>" + row.sessions_remaining + "</td>" +
-            "<td>" + expires + "</td>";
-          tbody.appendChild(tr);
-        });
-      });
+    // Session check only — credits/balance rendering is handled by
+    // loadCreditsAndBalance() in the booking section below.
+    fetch("/api/me").then(function (res) {
+      if (res.status === 401) window.location.href = "/app/";
+    });
 
     var logoutLink = document.getElementById("logout-link");
     if (logoutLink) {
@@ -117,6 +86,9 @@
     var bookingCancelBtn = document.getElementById("booking-cancel");
     var reschedulingSessionId = null;
     var selectedDate = null;
+    var currentBalance = 0;
+    var dropInPkg = null;
+    var paymentsEnabled = false;
 
     // Current Phoenix year/month drives the initial calendar view.
     var nowParts = phoenixParts(Math.floor(Date.now() / 1000));
@@ -133,6 +105,92 @@
     }
 
     function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+
+    function money(cents) { return "$" + (cents / 100).toFixed(2); }
+
+    function payMethod() {
+      var row = document.getElementById("pay-method-row");
+      if (row.hidden) return "credit";
+      return document.getElementById("pay-dropin").checked ? "drop_in" : "credit";
+    }
+
+    function updatePayMethodRow() {
+      var row = document.getElementById("pay-method-row");
+      var showDropIn = dropInPkg && paymentsEnabled && !reschedulingSessionId;
+      if (!showDropIn) {
+        row.hidden = true;
+        return;
+      }
+      row.hidden = false;
+      document.getElementById("pay-credit-label").textContent =
+        "Use a session credit (" + currentBalance + " left)";
+      document.getElementById("pay-dropin-label").textContent =
+        "Pay for a single session (" + money(dropInPkg.price_cents) + ")";
+
+      var creditRadio = document.getElementById("pay-credit");
+      creditRadio.disabled = currentBalance === 0;
+      if (currentBalance === 0) {
+        document.getElementById("pay-dropin").checked = true;
+      }
+    }
+
+    document.getElementById("pay-credit").addEventListener("change", loadSlotsForSelectedDate);
+    document.getElementById("pay-dropin").addEventListener("change", loadSlotsForSelectedDate);
+
+    function loadPackages() {
+      return fetch("/api/app/packages")
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          paymentsEnabled = data.payments_enabled;
+          var buyable = [];
+          data.packages.forEach(function (p) {
+            if (p.is_drop_in) { dropInPkg = p; return; }
+            if (p.price_cents > 0) buyable.push(p);
+          });
+
+          var card = document.getElementById("buy-card");
+          if (!paymentsEnabled || buyable.length === 0) {
+            card.hidden = true;
+          } else {
+            card.hidden = false;
+            var tbody = document.querySelector("#buy-table tbody");
+            tbody.innerHTML = "";
+            buyable.forEach(function (p) {
+              var tr = document.createElement("tr");
+              tr.innerHTML =
+                "<td>" + p.name + "</td>" +
+                "<td>" + p.session_count + "</td>" +
+                "<td>" + money(p.price_cents) + "</td>" +
+                "<td></td>";
+              var buyBtn = document.createElement("button");
+              buyBtn.className = "portal-button";
+              buyBtn.textContent = "Buy";
+              buyBtn.addEventListener("click", function () {
+                var messageEl = document.getElementById("buy-message");
+                messageEl.className = "portal-message";
+                messageEl.textContent = "Redirecting to secure checkout…";
+                fetch("/api/app/checkout/package", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ package_id: p.id }),
+                })
+                  .then(function (res) {
+                    if (!res.ok) return res.json().then(function (d) { throw new Error(d.error); });
+                    return res.json();
+                  })
+                  .then(function (data) { window.location.href = data.url; })
+                  .catch(function (err) {
+                    messageEl.className = "portal-message error";
+                    messageEl.textContent = err.message || "Could not start checkout.";
+                  });
+              });
+              tr.lastElementChild.appendChild(buyBtn);
+              tbody.appendChild(tr);
+            });
+          }
+          updatePayMethodRow();
+        });
+    }
 
     function monthStr() {
       return viewYear + "-" + pad2(viewMonth + 1);
@@ -200,6 +258,7 @@
 
       var url = "/api/app/availability?date=" + selectedDate;
       if (reschedulingSessionId) url += "&reschedule_session_id=" + reschedulingSessionId;
+      else if (payMethod() === "drop_in") url += "&mode=drop_in";
 
       fetch(url)
         .then(function (res) { return res.json(); })
@@ -249,12 +308,14 @@
       clearSlots();
       renderCalendar();
       setBookingMessage("");
+      updatePayMethodRow();
     }
 
     function enterRescheduleMode(session) {
       reschedulingSessionId = session.id;
       bookingTitle.textContent = "Reschedule session";
       bookingCancelBtn.hidden = false;
+      updatePayMethodRow();
       var p = phoenixParts(session.starts_at);
       viewYear = p.year;
       viewMonth = p.month;
@@ -269,6 +330,26 @@
 
     function confirmSlot(startsAt) {
       var isReschedule = reschedulingSessionId !== null;
+
+      if (!isReschedule && payMethod() === "drop_in") {
+        setBookingMessage("Redirecting to secure checkout — your slot is held for 30 minutes…");
+        fetch("/api/app/checkout/drop-in", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ starts_at: startsAt }),
+        })
+          .then(function (res) {
+            if (!res.ok) return res.json().then(function (d) { throw new Error(d.error); });
+            return res.json();
+          })
+          .then(function (data) { window.location.href = data.url; })
+          .catch(function (err) {
+            setBookingMessage(err.message || "Could not start checkout.", "error");
+            loadSlotsForSelectedDate();
+          });
+        return;
+      }
+
       var url = isReschedule
         ? "/api/app/sessions/" + reschedulingSessionId + "/reschedule"
         : "/api/app/sessions";
@@ -295,6 +376,8 @@
         .then(function (res) { return res.json(); })
         .then(function (data) {
           balanceEl.textContent = data.balance;
+          currentBalance = data.balance;
+          updatePayMethodRow();
           var table = document.getElementById("credits-table");
           var empty = document.getElementById("credits-empty");
           var tbody = table.querySelector("tbody");
@@ -376,7 +459,25 @@
       });
     }
 
+    // Post-checkout redirect messaging. Fulfillment happens via Stripe's
+    // webhook, which can lag the redirect by a few seconds — refresh shortly.
+    var purchaseParam = new URLSearchParams(window.location.search).get("purchase");
+    if (purchaseParam === "success") {
+      setBookingMessage("Payment received! Your account will update in a few seconds…", "success");
+      window.history.replaceState({}, "", "/app/dashboard.html");
+      window.setTimeout(function () {
+        Promise.all([loadCreditsAndBalance(), loadSessions()]).then(function () {
+          setBookingMessage("Payment received — you're all set.", "success");
+        });
+      }, 4000);
+    } else if (purchaseParam === "cancelled") {
+      setBookingMessage("Checkout was cancelled — nothing was charged.");
+      window.history.replaceState({}, "", "/app/dashboard.html");
+    }
+
     loadSessions();
     renderCalendar();
+    loadPackages();
+    loadCreditsAndBalance();
   }
 })();

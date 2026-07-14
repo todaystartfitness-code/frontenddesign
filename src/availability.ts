@@ -97,6 +97,23 @@ async function getBookedSessionsForDay(
   return results ?? [];
 }
 
+// Unexpired slot holds (drop-in payments currently in Stripe Checkout) block
+// availability exactly like booked sessions do.
+async function getActiveHoldsForDay(
+  db: D1Database,
+  dateStr: string,
+): Promise<{ start: number; end: number }[]> {
+  const dayStart = phoenixDateToUtcSeconds(dateStr, 0);
+  const { results } = await db
+    .prepare(
+      `SELECT starts_at, ends_at FROM slot_holds
+       WHERE expires_at > unixepoch() AND starts_at < ? AND ends_at > ?`,
+    )
+    .bind(dayStart + 86400 + 10800, dayStart - 10800)
+    .all<{ starts_at: number; ends_at: number }>();
+  return (results ?? []).map((h) => ({ start: h.starts_at, end: h.ends_at }));
+}
+
 // Google Calendar busy intervals for the day (with margin), or [] if the
 // calendar isn't connected yet. Throws on API failure so callers fail closed
 // (better to show no slots than to double-book over a calendar event).
@@ -139,6 +156,7 @@ export async function computeAvailableSlots(
   const googleBusy = (await getGoogleBusyForDay(env, dateStr)).filter(
     (b) => !(excluded && b.start === excluded.starts_at && b.end === excluded.ends_at),
   );
+  const holds = await getActiveHoldsForDay(db, dateStr);
   const blocked = booked
     .filter((s) => s.id !== excludeSessionId)
     .map((s) => ({
@@ -146,7 +164,7 @@ export async function computeAvailableSlots(
       end: s.ends_at + bufferSeconds,
     }))
     .concat(
-      googleBusy.map((b) => ({
+      googleBusy.concat(holds).map((b) => ({
         start: b.start - bufferSeconds,
         end: b.end + bufferSeconds,
       })),
@@ -193,7 +211,8 @@ export async function isSlotAvailable(
   const googleBusy = (await getGoogleBusyForDay(env, dateStr)).filter(
     (b) => !(excluded && b.start === excluded.starts_at && b.end === excluded.ends_at),
   );
-  const googleConflict = googleBusy.some((b) => {
+  const holds = await getActiveHoldsForDay(db, dateStr);
+  const googleConflict = googleBusy.concat(holds).some((b) => {
     const blockedStart = b.start - bufferSeconds;
     const blockedEnd = b.end + bufferSeconds;
     return startsAt < blockedEnd && endsAt > blockedStart;

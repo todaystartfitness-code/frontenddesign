@@ -35,6 +35,12 @@ import {
   googleStatus,
 } from "./routes/google-auth";
 import {
+  checkoutDropIn,
+  checkoutPackage,
+  listBuyablePackages,
+  stripeWebhook,
+} from "./routes/payments";
+import {
   bookSession,
   cancelMySession,
   getAvailability,
@@ -92,6 +98,11 @@ export default {
         return await getMyCredits(env, client);
       }
 
+      // --- Stripe webhook (signature-verified, no session cookie) ---------
+      if (pathname === "/api/stripe/webhook" && method === "POST") {
+        return await stripeWebhook(request, env);
+      }
+
       // --- Client booking API: /api/app/* ---------------------------------
       if (pathname.startsWith("/api/app/")) {
         const client = await getSessionClient(env, request, "app");
@@ -101,12 +112,25 @@ export default {
           return await getMonthOpenDays(env, url.searchParams.get("month"));
         }
 
+        if (pathname === "/api/app/packages" && method === "GET") {
+          return await listBuyablePackages(env);
+        }
+
+        if (pathname === "/api/app/checkout/package" && method === "POST") {
+          return await checkoutPackage(request, env, client, url.origin);
+        }
+
+        if (pathname === "/api/app/checkout/drop-in" && method === "POST") {
+          return await checkoutDropIn(request, env, client, url.origin);
+        }
+
         if (pathname === "/api/app/availability" && method === "GET") {
           return await getAvailability(
             env,
             client,
             url.searchParams.get("date"),
             url.searchParams.get("reschedule_session_id"),
+            url.searchParams.get("mode"),
           );
         }
 

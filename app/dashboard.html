@@ -94,6 +94,12 @@
   <div class="portal-card">
     <h2 id="booking-title">Book a session</h2>
     <button type="button" class="portal-button secondary" id="booking-cancel" hidden>Cancel reschedule</button>
+    <div class="portal-checkbox" id="pay-method-row" hidden>
+      <input type="radio" name="pay-method" id="pay-credit" value="credit" checked>
+      <label for="pay-credit" id="pay-credit-label">Use a session credit</label>
+      <input type="radio" name="pay-method" id="pay-dropin" value="drop_in" style="margin-left: 1rem;">
+      <label for="pay-dropin" id="pay-dropin-label">Pay for a single session</label>
+    </div>
     <p class="portal-message" id="booking-message"></p>
     <div class="booking-layout">
       <div class="cal">
@@ -109,6 +115,17 @@
         <div class="slots-list" id="slots-grid"></div>
       </div>
     </div>
+  </div>
+
+  <div class="portal-card" id="buy-card" hidden>
+    <h2>Buy a package</h2>
+    <table class="portal-table" id="buy-table">
+      <thead>
+        <tr><th>Package</th><th>Sessions</th><th>Price</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="portal-message" id="buy-message"></p>
   </div>
 
   <div class="portal-card">

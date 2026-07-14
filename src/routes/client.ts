@@ -115,6 +115,7 @@ export async function getAvailability(
   client: ClientRow,
   dateStr: string | null,
   rescheduleSessionId: string | null,
+  mode: string | null,
 ): Promise<Response> {
   if (!dateStr || !DATE_RE.test(dateStr)) {
     return jsonResponse({ error: "date (YYYY-MM-DD) is required." }, 400);
@@ -126,7 +127,15 @@ export async function getAvailability(
   let durationMinutes: number;
   let excludeSessionId: number | undefined;
 
-  if (rescheduleSessionId) {
+  if (mode === "drop_in") {
+    const dropIn = await env.DB.prepare(
+      "SELECT * FROM packages WHERE is_drop_in = 1 AND archived = 0 ORDER BY updated_at DESC LIMIT 1",
+    ).first<PackageRow>();
+    if (!dropIn) {
+      return jsonResponse({ slots: [], duration_minutes: null, message: "No drop-in option is currently offered." });
+    }
+    durationMinutes = dropIn.session_duration_minutes;
+  } else if (rescheduleSessionId) {
     const session = await env.DB.prepare(
       "SELECT * FROM sessions WHERE id = ? AND client_id = ? AND status = 'booked'",
     )
