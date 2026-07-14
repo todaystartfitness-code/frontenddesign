@@ -12,3 +12,8 @@ run_worker_first = ["/api/*", "/app/*", "/admin/*"]
 binding = "DB"
 database_name = "fitstrong-db"
 database_id = "d97d86e3-1f15-4986-9287-a0fbd6ab5dfd"
+
+[triggers]
+# Checks for sessions starting in ~80-100 min every 5 minutes; reminder_sent
+# makes this idempotent against overlap/drift between ticks.
+crons = ["*/5 * * * *"]

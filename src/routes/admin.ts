@@ -2,6 +2,7 @@ import type { ClientRow, Env, PackageRow } from "../types";
 import { getActiveBalance, grantCredits, adjustLedgerCredits, voidLedgerCredits } from "../db";
 import { createMagicLinkToken } from "../auth";
 import { sendMagicLinkEmail } from "../email";
+import { normalizePhoneE164 } from "../phone";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -134,10 +135,18 @@ export async function createClient(request: Request, env: Env): Promise<Response
     return jsonResponse({ error: "A client with that email already exists." }, 409);
   }
 
+  let phone: string | null = null;
+  if (body.phone) {
+    phone = normalizePhoneE164(body.phone);
+    if (!phone) {
+      return jsonResponse({ error: "Enter a valid phone number, or leave it blank." }, 400);
+    }
+  }
+
   const result = await env.DB.prepare(
     "INSERT INTO clients (email, name, phone, role) VALUES (?, ?, ?, 'client')",
   )
-    .bind(email, body.name ?? null, body.phone ?? null)
+    .bind(email, body.name ?? null, phone)
     .run();
 
   return jsonResponse({ id: result.meta.last_row_id }, 201);
@@ -176,7 +185,18 @@ export async function updateClient(
   }
 
   const name = body.name !== undefined ? body.name || null : existing.name;
-  const phone = body.phone !== undefined ? body.phone || null : existing.phone;
+
+  let phone = existing.phone;
+  if (body.phone !== undefined) {
+    if (!body.phone) {
+      phone = null;
+    } else {
+      phone = normalizePhoneE164(body.phone);
+      if (!phone) {
+        return jsonResponse({ error: "Enter a valid phone number, or leave it blank." }, 400);
+      }
+    }
+  }
 
   await env.DB.prepare("UPDATE clients SET email = ?, name = ?, phone = ? WHERE id = ?")
     .bind(email, name, phone, clientId)

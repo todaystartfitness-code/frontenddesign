@@ -1,7 +1,10 @@
-import type { BusinessHoursOverrideRow, BusinessHoursRow, Env, PackageRow, SessionRow } from "../types";
+import type { BusinessHoursOverrideRow, BusinessHoursRow, ClientRow, Env, PackageRow, SessionRow } from "../types";
 import { adjustLedgerCredits, getSoonestExpiringLedger, nowSeconds } from "../db";
 import { getSettings, isSlotAvailable } from "../availability";
 import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from "../google";
+import { normalizePhoneE164 } from "../phone";
+import { notifyClient } from "../notify";
+import { formatPhoenixDateTime } from "../format";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -105,7 +108,10 @@ export async function deleteBusinessHoursOverride(env: Env, date: string): Promi
 
 export async function getSettingsRoute(env: Env): Promise<Response> {
   const settings = await getSettings(env.DB);
-  return jsonResponse(settings);
+  const phoneRow = await env.DB.prepare("SELECT value FROM settings WHERE key = 'admin_phone_number'").first<{
+    value: string;
+  }>();
+  return jsonResponse({ ...settings, adminPhoneNumber: phoneRow?.value ?? null });
 }
 
 export async function updateSettings(request: Request, env: Env): Promise<Response> {
@@ -114,8 +120,17 @@ export async function updateSettings(request: Request, env: Env): Promise<Respon
       buffer_before_minutes?: number;
       buffer_after_minutes?: number;
       reschedule_window_hours?: number;
+      admin_phone_number?: string | null;
     }>()
-    .catch(() => ({}) as Record<string, number>);
+    .catch(
+      () =>
+        ({}) as {
+          buffer_before_minutes?: number;
+          buffer_after_minutes?: number;
+          reschedule_window_hours?: number;
+          admin_phone_number?: string | null;
+        },
+    );
 
   const updates: [string, number | undefined][] = [
     ["buffer_before_minutes", body.buffer_before_minutes],
@@ -133,6 +148,23 @@ export async function updateSettings(request: Request, env: Env): Promise<Respon
     )
       .bind(key, String(value), String(value))
       .run();
+  }
+
+  if (body.admin_phone_number !== undefined) {
+    const raw = (body.admin_phone_number ?? "").trim();
+    if (!raw) {
+      await env.DB.prepare("DELETE FROM settings WHERE key = 'admin_phone_number'").run();
+    } else {
+      const phone = normalizePhoneE164(raw);
+      if (!phone) {
+        return jsonResponse({ error: "Enter a valid phone number for admin notifications." }, 400);
+      }
+      await env.DB.prepare(
+        "INSERT INTO settings (key, value) VALUES ('admin_phone_number', ?) ON CONFLICT(key) DO UPDATE SET value = ?",
+      )
+        .bind(phone, phone)
+        .run();
+    }
   }
 
   return jsonResponse({ ok: true });
@@ -243,11 +275,12 @@ export async function adminBookSession(request: Request, env: Env): Promise<Resp
     });
   }
 
+  const clientRow = await env.DB.prepare("SELECT * FROM clients WHERE id = ?")
+    .bind(body.client_id)
+    .first<ClientRow>();
+
   // Best-effort calendar mirror (conflicts are already prevented above).
   try {
-    const clientRow = await env.DB.prepare("SELECT email, name FROM clients WHERE id = ?")
-      .bind(body.client_id)
-      .first<{ email: string; name: string | null }>();
     const eventId = await createCalendarEvent(env, {
       startsAt,
       endsAt,
@@ -260,6 +293,15 @@ export async function adminBookSession(request: Request, env: Env): Promise<Resp
     }
   } catch (err) {
     console.error("Google Calendar event create failed:", err);
+  }
+
+  if (clientRow) {
+    const when = formatPhoenixDateTime(startsAt);
+    await notifyClient(env, clientRow, {
+      smsBody: `FitStrong Club: you're booked for a session on ${when}.`,
+      emailSubject: "Session booked — FitStrong Club",
+      emailBody: `<p>You're booked for a session on ${when}.</p>`,
+    });
   }
 
   return jsonResponse({ id: result.meta.last_row_id }, 201);
@@ -296,6 +338,18 @@ export async function adminRescheduleSession(
     } catch (err) {
       console.error("Google Calendar event update failed:", err);
     }
+  }
+
+  const clientRow = await env.DB.prepare("SELECT * FROM clients WHERE id = ?")
+    .bind(session.client_id)
+    .first<ClientRow>();
+  if (clientRow) {
+    const when = formatPhoenixDateTime(body.starts_at);
+    await notifyClient(env, clientRow, {
+      smsBody: `FitStrong Club: your session has been rescheduled to ${when}.`,
+      emailSubject: "Session rescheduled — FitStrong Club",
+      emailBody: `<p>Your session has been rescheduled to ${when}.</p>`,
+    });
   }
 
   return jsonResponse({ ok: true });
@@ -338,6 +392,18 @@ export async function adminCancelSession(
     } catch (err) {
       console.error("Google Calendar event delete failed:", err);
     }
+  }
+
+  const clientRow = await env.DB.prepare("SELECT * FROM clients WHERE id = ?")
+    .bind(session.client_id)
+    .first<ClientRow>();
+  if (clientRow) {
+    const when = formatPhoenixDateTime(session.starts_at);
+    await notifyClient(env, clientRow, {
+      smsBody: `FitStrong Club: your session on ${when} has been cancelled.`,
+      emailSubject: "Session cancelled — FitStrong Club",
+      emailBody: `<p>Your session on ${when} has been cancelled.</p>`,
+    });
   }
 
   return jsonResponse({ ok: true });

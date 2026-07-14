@@ -49,7 +49,9 @@ import {
   getMyCredits,
   getMySessions,
   rescheduleMySession,
+  updateMyPhone,
 } from "./routes/client";
+import { sendUpcomingReminders } from "./reminders";
 
 function isStaticAssetPath(pathname: string): boolean {
   return /\.(js|css|png|jpg|jpeg|svg|gif|ico|webp|json|map|woff2?|ttf)$/i.test(pathname);
@@ -90,6 +92,12 @@ export default {
         const client = await getSessionClient(env, request, "app");
         if (!client) return jsonResponse({ error: "Not authenticated." }, 401);
         return await getMe(client);
+      }
+
+      if (pathname === "/api/me" && method === "PATCH") {
+        const client = await getSessionClient(env, request, "app");
+        if (!client) return jsonResponse({ error: "Not authenticated." }, 401);
+        return await updateMyPhone(request, env, client);
       }
 
       if (pathname === "/api/me/credits" && method === "GET") {
@@ -296,5 +304,9 @@ export default {
       console.error(err);
       return jsonResponse({ error: "Internal server error." }, 500);
     }
+  },
+
+  async scheduled(_event: ScheduledEvent, env: Env): Promise<void> {
+    await sendUpcomingReminders(env);
   },
 };

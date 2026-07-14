@@ -26,19 +26,25 @@ async function sha256Hex(input: string): Promise<string> {
     .join("");
 }
 
+export type LoginChannel = "email" | "phone";
+
+// `identifier` is an email address or an E.164 phone number, depending on
+// `channel` — stored in the same column either way (see migration 0006).
 export async function createMagicLinkToken(
   db: D1Database,
-  email: string,
+  identifier: string,
   audience: "app" | "admin",
+  channel: LoginChannel = "email",
 ): Promise<string> {
   const token = randomToken();
   const tokenHash = await sha256Hex(token);
   const expiresAt = Math.floor(Date.now() / 1000) + MAGIC_LINK_TTL_SECONDS;
+  const value = channel === "email" ? identifier.toLowerCase() : identifier;
   await db
     .prepare(
-      "INSERT INTO magic_link_tokens (email, audience, token_hash, expires_at) VALUES (?, ?, ?, ?)",
+      "INSERT INTO magic_link_tokens (email, audience, channel, token_hash, expires_at) VALUES (?, ?, ?, ?, ?)",
     )
-    .bind(email.toLowerCase(), audience, tokenHash, expiresAt)
+    .bind(value, audience, channel, tokenHash, expiresAt)
     .run();
   return token;
 }
@@ -47,15 +53,21 @@ export async function verifyMagicLinkToken(
   db: D1Database,
   rawToken: string,
   audience: "app" | "admin",
-): Promise<string | null> {
+): Promise<{ identifier: string; channel: LoginChannel } | null> {
   const tokenHash = await sha256Hex(rawToken);
   const now = Math.floor(Date.now() / 1000);
   const row = await db
     .prepare(
-      "SELECT id, email, expires_at, used_at FROM magic_link_tokens WHERE token_hash = ? AND audience = ?",
+      "SELECT id, email, channel, expires_at, used_at FROM magic_link_tokens WHERE token_hash = ? AND audience = ?",
     )
     .bind(tokenHash, audience)
-    .first<{ id: number; email: string; expires_at: number; used_at: number | null }>();
+    .first<{
+      id: number;
+      email: string;
+      channel: LoginChannel;
+      expires_at: number;
+      used_at: number | null;
+    }>();
 
   if (!row || row.used_at !== null || row.expires_at < now) {
     return null;
@@ -66,7 +78,7 @@ export async function verifyMagicLinkToken(
     .bind(now, row.id)
     .run();
 
-  return row.email;
+  return { identifier: row.email, channel: row.channel };
 }
 
 export async function createSession(db: D1Database, clientId: number): Promise<string> {

@@ -7,8 +7,8 @@ import {
   verifyMagicLinkToken,
 } from "../auth";
 import { sendMagicLinkEmail } from "../email";
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { sendMagicLinkSms } from "../twilio";
+import { looksLikeEmail, normalizePhoneE164 } from "../phone";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -23,40 +23,80 @@ export async function handleRequestLink(
   audience: "app" | "admin",
 ): Promise<Response> {
   const body = await request
-    .json<{ email?: string }>()
-    .catch(() => ({}) as { email?: string });
-  const email = body.email?.trim().toLowerCase();
+    .json<{ identifier?: string; email?: string }>()
+    .catch(() => ({}) as { identifier?: string; email?: string });
+  // Accept either field name — `email` for back-compat with the admin form,
+  // which is always email-only.
+  const raw = (body.identifier ?? body.email ?? "").trim();
 
-  if (!email || !EMAIL_RE.test(email)) {
-    return jsonResponse({ error: "A valid email is required." }, 400);
+  if (!raw) {
+    return jsonResponse({ error: "An email or phone number is required." }, 400);
   }
 
-  let client = await env.DB.prepare("SELECT * FROM clients WHERE email = ?")
-    .bind(email)
-    .first<ClientRow>();
+  const genericMessage = { ok: true, message: "If that account is eligible, a login link is on its way." };
 
-  if (audience === "app" && !client) {
-    // Self-signup: creating a client account on first login attempt.
-    await env.DB.prepare("INSERT INTO clients (email, role) VALUES (?, 'client')")
-      .bind(email)
-      .run();
-    client = await env.DB.prepare("SELECT * FROM clients WHERE email = ?")
+  // Admin login is always email-only (a fixed, single admin account).
+  if (audience === "admin") {
+    if (!looksLikeEmail(raw)) {
+      return jsonResponse({ error: "A valid email is required." }, 400);
+    }
+    const email = raw.toLowerCase();
+    const client = await env.DB.prepare("SELECT * FROM clients WHERE email = ?")
       .bind(email)
       .first<ClientRow>();
+    if (client && client.role === "admin") {
+      const token = await createMagicLinkToken(env.DB, email, "admin", "email");
+      const url = new URL(request.url);
+      const verifyUrl = `${url.origin}/api/auth/admin/verify?token=${token}`;
+      await sendMagicLinkEmail(env, email, verifyUrl);
+    }
+    return jsonResponse(genericMessage);
   }
 
-  // Don't reveal account existence either way; only actually send mail
-  // when the account is eligible for this audience.
-  const eligible = client && (audience === "app" || client.role === "admin");
+  // Client login: email or phone.
+  if (looksLikeEmail(raw)) {
+    const email = raw.toLowerCase();
+    let client = await env.DB.prepare("SELECT * FROM clients WHERE email = ?")
+      .bind(email)
+      .first<ClientRow>();
 
-  if (eligible && client) {
-    const token = await createMagicLinkToken(env.DB, email, audience);
+    if (!client) {
+      // Self-signup: creating a client account on first login attempt.
+      await env.DB.prepare("INSERT INTO clients (email, role) VALUES (?, 'client')")
+        .bind(email)
+        .run();
+      client = await env.DB.prepare("SELECT * FROM clients WHERE email = ?")
+        .bind(email)
+        .first<ClientRow>();
+    }
+
+    if (client) {
+      const token = await createMagicLinkToken(env.DB, email, "app", "email");
+      const url = new URL(request.url);
+      const verifyUrl = `${url.origin}/api/auth/app/verify?token=${token}`;
+      await sendMagicLinkEmail(env, email, verifyUrl);
+    }
+    return jsonResponse(genericMessage);
+  }
+
+  // Phone: only existing clients with a matching phone on file — phone
+  // alone can't create a new account (email is required at signup).
+  const phone = normalizePhoneE164(raw);
+  if (!phone) {
+    return jsonResponse({ error: "Enter a valid email or phone number." }, 400);
+  }
+
+  const client = await env.DB.prepare("SELECT * FROM clients WHERE phone = ? AND role = 'client'")
+    .bind(phone)
+    .first<ClientRow>();
+
+  if (client) {
+    const token = await createMagicLinkToken(env.DB, phone, "app", "phone");
     const url = new URL(request.url);
-    const verifyUrl = `${url.origin}/api/auth/${audience}/verify?token=${token}`;
-    await sendMagicLinkEmail(env, email, verifyUrl);
+    const verifyUrl = `${url.origin}/api/auth/app/verify?token=${token}`;
+    await sendMagicLinkSms(env, phone, verifyUrl);
   }
-
-  return jsonResponse({ ok: true, message: "If that email is eligible, a login link is on its way." });
+  return jsonResponse(genericMessage);
 }
 
 export async function handleVerify(
@@ -71,13 +111,14 @@ export async function handleVerify(
     return jsonResponse({ error: "Missing token." }, 400);
   }
 
-  const email = await verifyMagicLinkToken(env.DB, token, audience);
-  if (!email) {
+  const result = await verifyMagicLinkToken(env.DB, token, audience);
+  if (!result) {
     return jsonResponse({ error: "This login link is invalid or has expired." }, 400);
   }
 
-  const client = await env.DB.prepare("SELECT * FROM clients WHERE email = ?")
-    .bind(email)
+  const column = result.channel === "phone" ? "phone" : "email";
+  const client = await env.DB.prepare(`SELECT * FROM clients WHERE ${column} = ?`)
+    .bind(result.identifier)
     .first<ClientRow>();
 
   if (!client || (audience === "admin" && client.role !== "admin")) {

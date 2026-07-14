@@ -3,6 +3,9 @@ import type { ClientRow, Env, PackageRow, SessionRow } from "../types";
 import { adjustLedgerCredits, getActiveBalance, getSoonestExpiringLedger, nowSeconds } from "../db";
 import { computeAvailableSlots, getSettings, isSlotAvailable } from "../availability";
 import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from "../google";
+import { normalizePhoneE164 } from "../phone";
+import { notifyAdmin, notifyClient } from "../notify";
+import { formatPhoenixDateTime } from "../format";
 
 // Calendar mirroring is best-effort: a Google hiccup shouldn't lose a
 // booking that's already validated and stored. Conflicts are prevented at
@@ -37,6 +40,24 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function getMe(client: ClientRow): Promise<Response> {
   return jsonResponse({ client });
+}
+
+export async function updateMyPhone(request: Request, env: Env, client: ClientRow): Promise<Response> {
+  const body = await request.json<{ phone?: string }>().catch(() => ({}) as { phone?: string });
+  const raw = (body.phone ?? "").trim();
+
+  if (!raw) {
+    await env.DB.prepare("UPDATE clients SET phone = NULL WHERE id = ?").bind(client.id).run();
+    return jsonResponse({ ok: true, phone: null });
+  }
+
+  const phone = normalizePhoneE164(raw);
+  if (!phone) {
+    return jsonResponse({ error: "Enter a valid phone number." }, 400);
+  }
+
+  await env.DB.prepare("UPDATE clients SET phone = ? WHERE id = ?").bind(phone, client.id).run();
+  return jsonResponse({ ok: true, phone });
 }
 
 export async function getMyCredits(env: Env, client: ClientRow): Promise<Response> {
@@ -212,6 +233,14 @@ export async function bookSession(request: Request, env: Env, client: ClientRow)
     client.name || client.email,
   );
 
+  const when = formatPhoenixDateTime(startsAt);
+  await notifyClient(env, client, {
+    smsBody: `FitStrong Club: your session on ${when} is confirmed.`,
+    emailSubject: "Session confirmed — FitStrong Club",
+    emailBody: `<p>Your session on ${when} is confirmed.</p>`,
+  });
+  await notifyAdmin(env, `${client.name || client.email} booked a session for ${when}.`);
+
   return jsonResponse({ id: result.meta.last_row_id }, 201);
 }
 
@@ -287,6 +316,14 @@ export async function rescheduleMySession(
     }
   }
 
+  const when = formatPhoenixDateTime(newStartsAt);
+  await notifyClient(env, client, {
+    smsBody: `FitStrong Club: your session has been rescheduled to ${when}.`,
+    emailSubject: "Session rescheduled — FitStrong Club",
+    emailBody: `<p>Your session has been rescheduled to ${when}.</p>`,
+  });
+  await notifyAdmin(env, `${client.name || client.email} rescheduled their session to ${when}.`);
+
   return jsonResponse({ ok: true });
 }
 
@@ -318,6 +355,14 @@ export async function cancelMySession(
       console.error("Google Calendar event delete failed:", err);
     }
   }
+
+  const when = formatPhoenixDateTime(session.starts_at);
+  await notifyClient(env, client, {
+    smsBody: `FitStrong Club: your session on ${when} has been cancelled.`,
+    emailSubject: "Session cancelled — FitStrong Club",
+    emailBody: `<p>Your session on ${when} has been cancelled.</p>`,
+  });
+  await notifyAdmin(env, `${client.name || client.email} cancelled their session on ${when}.`);
 
   return jsonResponse({ ok: true });
 }

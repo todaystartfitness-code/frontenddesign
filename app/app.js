@@ -24,7 +24,7 @@
         .then(function (res) { return res.json(); })
         .then(function (data) {
           messageEl.className = "portal-message success";
-          messageEl.textContent = data.message || "Check your email for a login link.";
+          messageEl.textContent = data.message || "Check your email or phone for a login link.";
         })
         .catch(function () {
           messageEl.className = "portal-message error";
@@ -35,10 +35,15 @@
 
   var balanceEl = document.getElementById("balance");
   if (balanceEl) {
-    // Session check only — credits/balance rendering is handled by
-    // loadCreditsAndBalance() in the booking section below.
+    // Session check — also prefills the phone field below. Balance/credits
+    // rendering itself is handled by loadCreditsAndBalance() further down.
     fetch("/api/me").then(function (res) {
-      if (res.status === 401) window.location.href = "/app/";
+      if (res.status === 401) { window.location.href = "/app/"; return null; }
+      return res.json();
+    }).then(function (data) {
+      if (!data || !data.client) return;
+      var phoneInput = document.getElementById("my-phone");
+      if (phoneInput) phoneInput.value = data.client.phone || "";
     });
 
     var logoutLink = document.getElementById("logout-link");
@@ -48,6 +53,30 @@
         fetch("/api/auth/app/logout", { method: "POST" }).then(function () {
           window.location.href = "/app/";
         });
+      });
+    }
+
+    var savePhoneBtn = document.getElementById("save-phone-btn");
+    if (savePhoneBtn) {
+      savePhoneBtn.addEventListener("click", function () {
+        var messageEl = document.getElementById("phone-message");
+        messageEl.className = "portal-message";
+        messageEl.textContent = "Saving…";
+        fetch("/api/me", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: document.getElementById("my-phone").value }),
+        })
+          .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+          .then(function (r) {
+            if (!r.ok) throw new Error(r.data.error);
+            messageEl.className = "portal-message success";
+            messageEl.textContent = "Phone number saved.";
+          })
+          .catch(function (err) {
+            messageEl.className = "portal-message error";
+            messageEl.textContent = err.message || "Could not save phone number.";
+          });
       });
     }
   }

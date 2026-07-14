@@ -6,6 +6,9 @@ export interface Env {
   GOOGLE_CLIENT_SECRET: string;
   STRIPE_SECRET_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;
+  TWILIO_ACCOUNT_SID: string;
+  TWILIO_AUTH_TOKEN: string;
+  TWILIO_PHONE_NUMBER: string;
 }
 
 export type Role = "client" | "admin";
@@ -74,5 +77,6 @@ export interface SessionRow {
   cancelled_at: number | null;
   cancelled_reason: string | null;
   google_event_id: string | null;
+  reminder_sent: number;
   created_at: number;
 }

@@ -519,8 +519,26 @@
         document.getElementById("setting-buffer-before").value = data.bufferBeforeMinutes;
         document.getElementById("setting-buffer-after").value = data.bufferAfterMinutes;
         document.getElementById("setting-reschedule-window").value = data.rescheduleWindowHours;
+        document.getElementById("setting-admin-phone").value = data.adminPhoneNumber || "";
       });
   }
+
+  document.getElementById("save-admin-phone-btn").addEventListener("click", function () {
+    var messageEl = document.getElementById("admin-phone-message");
+    fetch("/api/admin/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ admin_phone_number: document.getElementById("setting-admin-phone").value }),
+    })
+      .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+      .then(function (r) {
+        if (!r.ok) throw new Error(r.data.error);
+        setMessage(messageEl, "Saved.", "success");
+      })
+      .catch(function (err) {
+        setMessage(messageEl, err.message || "Could not save.", "error");
+      });
+  });
 
   document.getElementById("save-settings-btn").addEventListener("click", function () {
     var messageEl = document.getElementById("settings-message");
