@@ -33,6 +33,7 @@ export interface PackageRow {
   archived: number;
   is_public: number;
   requires_payment: number;
+  description: string | null;
   created_at: number;
   updated_at: number;
 }

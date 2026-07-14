@@ -34,7 +34,7 @@ export async function listPublicQuiz(env: Env): Promise<Response> {
 
 export async function listPublicPackages(env: Env): Promise<Response> {
   const { results } = await env.DB.prepare(
-    `SELECT id, name, session_count, price_cents, expiration_days, session_duration_minutes, requires_payment
+    `SELECT id, name, session_count, price_cents, expiration_days, session_duration_minutes, requires_payment, description
      FROM packages WHERE is_public = 1 AND archived = 0
      ORDER BY price_cents ASC`,
   ).all<PackageRow>();

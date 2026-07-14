@@ -832,6 +832,12 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="js/main.js"></script>
 
+<!-- FitStrong's own booking widget popup — not wired to any button yet.
+     Trigger it from any element via data-fitstrong-book="<package id>"
+     (or omit the value to show the package picker), e.g.:
+     <a href="/book/" data-fitstrong-book="6">Start Your 3 Sessions</a> -->
+<script src="js/book-widget.js?v=2"></script>
+
 <!-- Lunacal booking embed: popup on the hero CTA, inline calendar in the Book section -->
 <script type="text/javascript">
   (function(L,U,N){let p=(a,ar)=>a.q.push(ar),d=L.document;L.Lunacal=L.Lunacal||function(){let lun=L.Lunacal,ar=arguments;if(!lun.loaded){lun.ns={};lun.q=lun.q||[];d.head.appendChild(d.createElement("script")).src=U;lun.loaded=!0}if(ar[0]===N){const api=function(){p(api,arguments)};const ns=ar[1];api.q=api.q||[];if(typeof ns==="string"){lun.ns[ns]=lun.ns[ns]||api;p(lun.ns[ns],ar);p(lun,["initNamespace",ns])}else p(lun,ar);return}p(lun,ar)};if(!L.Cal)L.Cal=L.Lunacal})(window,"https://app.lunacal.ai/embed/embed.js","init");

@@ -13,7 +13,15 @@
   /* Standalone/embeddable: no site nav or footer, tighter shell, sized to
      look good inside an <iframe> as well as a full page. */
   body.portal { max-width: 640px; padding: var(--space-3) var(--space-2); }
+  body.embed-modal .portal-header { display: none; }
   .portal-shell { max-width: 100%; }
+  .book-trainer-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: var(--space-3); }
+  .book-trainer-photo { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+  .book-trainer-name { font-weight: 600; }
+  .book-trainer-role { font-size: 0.85rem; color: var(--ink-muted); }
+  .book-offer { margin-bottom: var(--space-3); }
+  .book-offer h2 { margin: 0 0 0.35rem; }
+  .book-offer p { color: var(--ink-muted); font-size: 0.92rem; margin: 0; }
   .book-step { display: none; }
   .book-step.active { display: block; }
   .book-progress {
@@ -82,6 +90,18 @@
   </div>
 
   <div class="portal-card">
+    <div class="book-trainer-header">
+      <img src="/assets/images/about/rico-after.jpg" alt="Rico Armstrong" class="book-trainer-photo">
+      <div>
+        <div class="book-trainer-name">Rico Armstrong</div>
+        <div class="book-trainer-role">Personal Trainer</div>
+      </div>
+    </div>
+    <div class="book-offer" id="book-offer" hidden>
+      <h2 id="book-offer-name"></h2>
+      <p id="book-offer-description"></p>
+    </div>
+
     <p class="book-progress" id="book-progress"></p>
 
     <div class="book-step" id="step-quiz">
@@ -151,6 +171,6 @@
     </div>
   </div>
 </div>
-<script src="/book/book.js"></script>
+<script src="/book/book.js?v=2"></script>
 </body>
 </html>

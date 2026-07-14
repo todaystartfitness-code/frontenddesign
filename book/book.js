@@ -152,7 +152,22 @@
   function selectPackage(p) {
     selectedPackage = p;
     document.querySelectorAll(".package-option").forEach(function (el) { el.classList.remove("selected"); });
+    updateOfferHeader();
     nextStep();
+  }
+
+  function updateOfferHeader() {
+    var offerEl = document.getElementById("book-offer");
+    if (!selectedPackage) { offerEl.hidden = true; return; }
+    document.getElementById("book-offer-name").textContent = selectedPackage.name;
+    var descEl = document.getElementById("book-offer-description");
+    if (selectedPackage.description) {
+      descEl.textContent = selectedPackage.description;
+      descEl.hidden = false;
+    } else {
+      descEl.hidden = true;
+    }
+    offerEl.hidden = false;
   }
 
   // --- Calendar step -------------------------------------------------
@@ -302,6 +317,10 @@
   var cancelledParam = params.get("cancelled");
   preselectedPackageId = params.get("package") ? Number(params.get("package")) : null;
 
+  if (params.get("embed") === "modal") {
+    document.body.classList.add("embed-modal");
+  }
+
   if (bookedParam === "1") {
     computeStepOrder();
     setMessage(
@@ -322,6 +341,7 @@
       if (preselectedPackageId) {
         selectedPackage = packages.filter(function (p) { return p.id === preselectedPackageId; })[0] || null;
         if (!selectedPackage) preselectedPackageId = null; // fall back to picker if invalid/not public
+        else updateOfferHeader();
       }
 
       computeStepOrder();

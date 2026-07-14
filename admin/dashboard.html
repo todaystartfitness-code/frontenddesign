@@ -65,6 +65,10 @@
         <input type="checkbox" id="pkg-requires-payment" checked>
         <label for="pkg-requires-payment">Requires payment (uncheck for a free consultation/offer)</label>
       </div>
+      <div class="portal-field">
+        <label for="pkg-description">Public description (shown on the /book widget for this offer)</label>
+        <textarea id="pkg-description" rows="2" placeholder="Let's get clear on your goals to create a gameplan that will get you results fast and that lasts."></textarea>
+      </div>
       <button type="submit" class="portal-button" id="package-form-submit">Add package</button>
       <button type="button" class="portal-button secondary" id="package-form-cancel" hidden>Cancel</button>
       <p class="portal-message" id="package-message"></p>
@@ -75,7 +79,7 @@
     <h2>Packages</h2>
     <table class="portal-table" id="packages-table">
       <thead>
-        <tr><th>Name</th><th>Sessions</th><th>Length</th><th>Price</th><th>Expires</th><th>Drop-in</th><th>Public</th><th>Active clients</th><th></th></tr>
+        <tr><th>ID</th><th>Name</th><th>Sessions</th><th>Length</th><th>Price</th><th>Expires</th><th>Drop-in</th><th>Public</th><th>Active clients</th><th></th></tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -378,6 +382,6 @@
     <p class="portal-empty" id="cancellations-empty" hidden>No cancellations.</p>
   </div>
 </div>
-<script src="/admin/admin.js" data-page="dashboard"></script>
+<script src="/admin/admin.js?v=2" data-page="dashboard"></script>
 </body>
 </html>

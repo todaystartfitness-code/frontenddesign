@@ -48,12 +48,23 @@ export async function createPackage(request: Request, env: Env): Promise<Respons
   const isDropIn = body.is_drop_in ? 1 : 0;
   const isPublic = body.is_public ? 1 : 0;
   const requiresPayment = body.requires_payment === undefined ? 1 : body.requires_payment ? 1 : 0;
+  const description = body.description?.trim() || null;
 
   const result = await env.DB.prepare(
-    `INSERT INTO packages (name, session_count, price_cents, expiration_days, session_duration_minutes, is_drop_in, is_public, requires_payment)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO packages (name, session_count, price_cents, expiration_days, session_duration_minutes, is_drop_in, is_public, requires_payment, description)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(name, session_count, price_cents, expiration_days, sessionDurationMinutes, isDropIn, isPublic, requiresPayment)
+    .bind(
+      name,
+      session_count,
+      price_cents,
+      expiration_days,
+      sessionDurationMinutes,
+      isDropIn,
+      isPublic,
+      requiresPayment,
+      description,
+    )
     .run();
 
   return jsonResponse({ id: result.meta.last_row_id }, 201);
@@ -84,11 +95,12 @@ export async function updatePackage(
     is_public: body.is_public !== undefined ? (body.is_public ? 1 : 0) : existing.is_public,
     requires_payment:
       body.requires_payment !== undefined ? (body.requires_payment ? 1 : 0) : existing.requires_payment,
+    description: body.description !== undefined ? (body.description?.trim() || null) : existing.description,
   };
 
   await env.DB.prepare(
     `UPDATE packages
-     SET name = ?, session_count = ?, price_cents = ?, expiration_days = ?, session_duration_minutes = ?, is_drop_in = ?, archived = ?, is_public = ?, requires_payment = ?, updated_at = unixepoch()
+     SET name = ?, session_count = ?, price_cents = ?, expiration_days = ?, session_duration_minutes = ?, is_drop_in = ?, archived = ?, is_public = ?, requires_payment = ?, description = ?, updated_at = unixepoch()
      WHERE id = ?`,
   )
     .bind(
@@ -101,6 +113,7 @@ export async function updatePackage(
       next.archived,
       next.is_public,
       next.requires_payment,
+      next.description,
       packageId,
     )
     .run();

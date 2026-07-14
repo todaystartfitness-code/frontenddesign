@@ -64,6 +64,7 @@
       var tr = document.createElement("tr");
       if (p.archived) tr.className = "archived-row";
       tr.innerHTML =
+        "<td>" + p.id + "</td>" +
         "<td>" + p.name + "</td>" +
         "<td>" + p.session_count + "</td>" +
         "<td>" + p.session_duration_minutes + " min</td>" +
@@ -111,6 +112,7 @@
     document.getElementById("pkg-dropin").checked = !!p.is_drop_in;
     document.getElementById("pkg-public").checked = !!p.is_public;
     document.getElementById("pkg-requires-payment").checked = p.requires_payment !== 0;
+    document.getElementById("pkg-description").value = p.description || "";
 
     document.getElementById("package-form-title").textContent = "Edit package — " + p.name;
     document.getElementById("package-form-submit").textContent = "Save changes";
@@ -174,6 +176,7 @@
       is_drop_in: document.getElementById("pkg-dropin").checked,
       is_public: document.getElementById("pkg-public").checked,
       requires_payment: document.getElementById("pkg-requires-payment").checked,
+      description: document.getElementById("pkg-description").value,
     };
 
     var isEditing = editingPackageId !== null;
