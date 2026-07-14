@@ -108,69 +108,116 @@
     return MONTHS[p.month] + " " + p.day + ", " + p.year;
   }
 
-  var bookingDateInput = document.getElementById("booking-date");
-  if (bookingDateInput) {
+  var calGrid = document.getElementById("cal-grid");
+  if (calGrid) {
     var slotsGrid = document.getElementById("slots-grid");
+    var daySlotsTitle = document.getElementById("day-slots-title");
     var bookingMessage = document.getElementById("booking-message");
     var bookingTitle = document.getElementById("booking-title");
     var bookingCancelBtn = document.getElementById("booking-cancel");
     var reschedulingSessionId = null;
+    var selectedDate = null;
+
+    // Current Phoenix year/month drives the initial calendar view.
+    var nowParts = phoenixParts(Math.floor(Date.now() / 1000));
+    var viewYear = nowParts.year;
+    var viewMonth = nowParts.month; // 0-based
+
+    var DOW_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    var MONTHS_FULL = ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"];
 
     function setBookingMessage(text, kind) {
       bookingMessage.className = "portal-message" + (kind ? " " + kind : "");
       bookingMessage.textContent = text;
     }
 
-    function exitRescheduleMode() {
-      reschedulingSessionId = null;
-      bookingTitle.textContent = "Book a session";
-      bookingCancelBtn.hidden = true;
-      slotsGrid.hidden = true;
-      slotsGrid.innerHTML = "";
-      setBookingMessage("");
+    function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+
+    function monthStr() {
+      return viewYear + "-" + pad2(viewMonth + 1);
     }
 
-    function enterRescheduleMode(session) {
-      reschedulingSessionId = session.id;
-      bookingTitle.textContent = "Reschedule session";
-      bookingCancelBtn.hidden = false;
-      var p = phoenixParts(session.starts_at);
-      var mm = (p.month + 1) < 10 ? "0" + (p.month + 1) : (p.month + 1);
-      var dd = p.day < 10 ? "0" + p.day : p.day;
-      bookingDateInput.value = p.year + "-" + mm + "-" + dd;
-      setBookingMessage("");
-      document.getElementById("booking-title").scrollIntoView({ behavior: "smooth", block: "start" });
-      findTimes();
+    function clearSlots(title) {
+      daySlotsTitle.textContent = title || "Pick a date";
+      slotsGrid.innerHTML = "";
     }
 
-    bookingCancelBtn.addEventListener("click", exitRescheduleMode);
+    function renderCalendar() {
+      document.getElementById("cal-month-label").textContent =
+        MONTHS_FULL[viewMonth] + " " + viewYear;
 
-    function findTimes() {
-      var date = bookingDateInput.value;
-      if (!date) {
-        setBookingMessage("Pick a date first.", "error");
-        return;
-      }
-      setBookingMessage("Loading available times…");
-      slotsGrid.hidden = true;
-      slotsGrid.innerHTML = "";
+      // Don't navigate before the current month.
+      document.getElementById("cal-prev").disabled =
+        viewYear === nowParts.year && viewMonth === nowParts.month;
 
-      var url = "/api/app/availability?date=" + date;
+      calGrid.innerHTML = "";
+      DOW_LABELS.forEach(function (label) {
+        var el = document.createElement("div");
+        el.className = "cal-dow";
+        el.textContent = label;
+        calGrid.appendChild(el);
+      });
+
+      fetch("/api/app/month?month=" + monthStr())
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          var firstDow = new Date(Date.UTC(viewYear, viewMonth, 1)).getUTCDay();
+          for (var i = 0; i < firstDow; i++) {
+            calGrid.appendChild(document.createElement("div"));
+          }
+
+          data.days.forEach(function (day) {
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "cal-day" + (day.open ? " open" : "");
+            btn.textContent = String(parseInt(day.date.slice(8), 10));
+            btn.disabled = !day.open;
+            if (day.date === selectedDate) btn.className += " selected";
+            if (day.open) {
+              btn.addEventListener("click", function () { selectDate(day.date, btn); });
+            }
+            calGrid.appendChild(btn);
+          });
+        });
+    }
+
+    function selectDate(dateStr, btn) {
+      selectedDate = dateStr;
+      calGrid.querySelectorAll(".cal-day.selected").forEach(function (el) {
+        el.classList.remove("selected");
+      });
+      btn.classList.add("selected");
+      loadSlotsForSelectedDate();
+    }
+
+    function loadSlotsForSelectedDate() {
+      if (!selectedDate) return;
+      setBookingMessage("");
+      var d = new Date(selectedDate + "T00:00:00Z");
+      var dayTitle = DOW_LABELS[d.getUTCDay()] + ", " + MONTHS[d.getUTCMonth()] + " " + d.getUTCDate();
+      clearSlots("Loading…");
+
+      var url = "/api/app/availability?date=" + selectedDate;
       if (reschedulingSessionId) url += "&reschedule_session_id=" + reschedulingSessionId;
 
       fetch(url)
         .then(function (res) { return res.json(); })
         .then(function (data) {
           if (data.message) {
+            clearSlots(dayTitle);
             setBookingMessage(data.message, "error");
             return;
           }
           if (data.slots.length === 0) {
-            setBookingMessage("No available times that day. Try another date.");
+            clearSlots(dayTitle);
+            var none = document.createElement("p");
+            none.className = "portal-empty";
+            none.textContent = "No open times this day.";
+            slotsGrid.appendChild(none);
             return;
           }
-          setBookingMessage("");
-          slotsGrid.hidden = false;
+          clearSlots(dayTitle);
           data.slots.forEach(function (slot) {
             var btn = document.createElement("button");
             btn.type = "button";
@@ -181,6 +228,44 @@
           });
         });
     }
+
+    document.getElementById("cal-prev").addEventListener("click", function () {
+      viewMonth--;
+      if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      renderCalendar();
+    });
+
+    document.getElementById("cal-next").addEventListener("click", function () {
+      viewMonth++;
+      if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+      renderCalendar();
+    });
+
+    function exitRescheduleMode() {
+      reschedulingSessionId = null;
+      bookingTitle.textContent = "Book a session";
+      bookingCancelBtn.hidden = true;
+      selectedDate = null;
+      clearSlots();
+      renderCalendar();
+      setBookingMessage("");
+    }
+
+    function enterRescheduleMode(session) {
+      reschedulingSessionId = session.id;
+      bookingTitle.textContent = "Reschedule session";
+      bookingCancelBtn.hidden = false;
+      var p = phoenixParts(session.starts_at);
+      viewYear = p.year;
+      viewMonth = p.month;
+      selectedDate = p.year + "-" + pad2(p.month + 1) + "-" + pad2(p.day);
+      setBookingMessage("Pick a new time for your session.");
+      renderCalendar();
+      loadSlotsForSelectedDate();
+      bookingTitle.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    bookingCancelBtn.addEventListener("click", exitRescheduleMode);
 
     function confirmSlot(startsAt) {
       var isReschedule = reschedulingSessionId !== null;
@@ -201,10 +286,9 @@
         })
         .catch(function (err) {
           setBookingMessage(err.message || "Could not book that time.", "error");
+          loadSlotsForSelectedDate();
         });
     }
-
-    document.getElementById("find-times-btn").addEventListener("click", findTimes);
 
     function loadCreditsAndBalance() {
       return fetch("/api/me/credits")
@@ -293,5 +377,6 @@
     }
 
     loadSessions();
+    renderCalendar();
   }
 })();

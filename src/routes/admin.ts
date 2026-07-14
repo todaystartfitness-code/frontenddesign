@@ -1,5 +1,7 @@
 import type { ClientRow, Env, PackageRow } from "../types";
 import { getActiveBalance, grantCredits, adjustLedgerCredits, voidLedgerCredits } from "../db";
+import { createMagicLinkToken } from "../auth";
+import { sendMagicLinkEmail } from "../email";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -233,6 +235,27 @@ export async function grantClientCredits(
   });
 
   return jsonResponse({ ledgerId }, 201);
+}
+
+// Admin-initiated login link, for clients who misplaced theirs or find the
+// self-serve flow confusing. Same single-use 15-minute token as self-serve.
+export async function sendClientLoginLink(
+  env: Env,
+  clientId: number,
+  origin: string,
+): Promise<Response> {
+  const client = await env.DB.prepare("SELECT * FROM clients WHERE id = ? AND role = 'client'")
+    .bind(clientId)
+    .first<ClientRow>();
+  if (!client) {
+    return jsonResponse({ error: "Client not found." }, 404);
+  }
+
+  const token = await createMagicLinkToken(env.DB, client.email, "app");
+  const verifyUrl = `${origin}/api/auth/app/verify?token=${token}`;
+  await sendMagicLinkEmail(env, client.email, verifyUrl);
+
+  return jsonResponse({ ok: true, message: `Login link sent to ${client.email}.` });
 }
 
 export async function voidClientCredit(

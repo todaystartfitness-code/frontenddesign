@@ -326,6 +326,22 @@
       });
   });
 
+  document.getElementById("send-login-link-btn").addEventListener("click", function () {
+    var messageEl = document.getElementById("client-info-message");
+    setMessage(messageEl, "Sending…");
+    fetch("/api/admin/clients/" + currentManagedClientId + "/send-login-link", { method: "POST" })
+      .then(function (res) {
+        if (!res.ok) return res.json().then(function (d) { throw new Error(d.error); });
+        return res.json();
+      })
+      .then(function (data) {
+        setMessage(messageEl, data.message || "Login link sent.", "success");
+      })
+      .catch(function (err) {
+        setMessage(messageEl, err.message || "Could not send the login link.", "error");
+      });
+  });
+
   document.getElementById("grant-form").addEventListener("submit", function (e) {
     e.preventDefault();
     var messageEl = document.getElementById("grant-message");

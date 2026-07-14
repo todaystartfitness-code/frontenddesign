@@ -7,6 +7,10 @@
    panels/forms/tables, no attempt to match the marketing site's motion
    design, just its color/type system, so it reads as the same brand. */
 
+/* The [hidden] attribute must always win, even against display rules on
+   .portal-button etc. — without this, "hidden" buttons still render. */
+[hidden] { display: none !important; }
+
 body.portal {
   background: var(--paper);
   --ink: var(--paper-ink);

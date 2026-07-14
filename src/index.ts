@@ -9,6 +9,7 @@ import {
   grantClientCredits,
   listClients,
   listPackages,
+  sendClientLoginLink,
   updateClient,
   updatePackage,
   voidClientCredit,
@@ -38,6 +39,7 @@ import {
   cancelMySession,
   getAvailability,
   getMe,
+  getMonthOpenDays,
   getMyCredits,
   getMySessions,
   rescheduleMySession,
@@ -94,6 +96,10 @@ export default {
       if (pathname.startsWith("/api/app/")) {
         const client = await getSessionClient(env, request, "app");
         if (!client) return jsonResponse({ error: "Not authenticated." }, 401);
+
+        if (pathname === "/api/app/month" && method === "GET") {
+          return await getMonthOpenDays(env, url.searchParams.get("month"));
+        }
 
         if (pathname === "/api/app/availability" && method === "GET") {
           return await getAvailability(
@@ -163,6 +169,11 @@ export default {
         const voidMatch = pathname.match(/^\/api\/admin\/clients\/(\d+)\/credits\/(\d+)\/void$/);
         if (voidMatch && method === "POST") {
           return await voidClientCredit(env, Number(voidMatch[1]), Number(voidMatch[2]));
+        }
+
+        const loginLinkMatch = pathname.match(/^\/api\/admin\/clients\/(\d+)\/send-login-link$/);
+        if (loginLinkMatch && method === "POST") {
+          return await sendClientLoginLink(env, Number(loginLinkMatch[1]), url.origin);
         }
 
         if (pathname === "/api/admin/business-hours") {

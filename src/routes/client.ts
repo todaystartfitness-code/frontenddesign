@@ -68,6 +68,48 @@ async function getClientSessionDuration(
   return { ledgerId: ledger.id, durationMinutes: pkg.session_duration_minutes };
 }
 
+// Which days of a month are bookable at all (open per weekly hours/overrides
+// and not in the past). Drives the calendar grid's enabled/disabled days —
+// deliberately does NOT consult Google Calendar (that would be ~31 API calls);
+// slot-level truth comes from getAvailability when a day is clicked.
+export async function getMonthOpenDays(
+  env: Env,
+  monthStr: string | null,
+): Promise<Response> {
+  if (!monthStr || !/^\d{4}-\d{2}$/.test(monthStr)) {
+    return jsonResponse({ error: "month (YYYY-MM) is required." }, 400);
+  }
+
+  const { results: hours } = await env.DB.prepare("SELECT * FROM business_hours").all<{
+    day_of_week: number;
+    is_closed: number;
+  }>();
+  const closedWeekdays = new Set((hours ?? []).filter((h) => h.is_closed).map((h) => h.day_of_week));
+
+  const { results: overrides } = await env.DB.prepare(
+    "SELECT date, is_closed FROM business_hours_overrides WHERE date LIKE ?",
+  )
+    .bind(`${monthStr}-%`)
+    .all<{ date: string; is_closed: number }>();
+  const overrideMap = new Map((overrides ?? []).map((o) => [o.date, !!o.is_closed]));
+
+  const [year, month] = monthStr.split("-").map(Number);
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  // Phoenix "today": anything before it is past. Compare date strings.
+  const todayStr = new Date((nowSeconds() - 7 * 3600) * 1000).toISOString().slice(0, 10);
+
+  const days: { date: string; open: boolean }[] = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${monthStr}-${String(d).padStart(2, "0")}`;
+    const weekday = new Date(`${dateStr}T00:00:00Z`).getUTCDay();
+    const overridden = overrideMap.get(dateStr);
+    const closed = overridden !== undefined ? overridden : closedWeekdays.has(weekday);
+    days.push({ date: dateStr, open: !closed && dateStr >= todayStr });
+  }
+
+  return jsonResponse({ days });
+}
+
 export async function getAvailability(
   env: Env,
   client: ClientRow,

@@ -10,19 +10,7 @@
 <link rel="stylesheet" href="/css/styles.css">
 <link rel="stylesheet" href="/css/portal.css">
 <style>
-  .portal-shell { max-width: 720px; }
-  .slots-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--space-2); }
-  .slot-button {
-    background: var(--paper);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm);
-    padding: 0.5rem 0.85rem;
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    cursor: pointer;
-    color: var(--ink);
-  }
-  .slot-button:hover { border-color: var(--rust); color: var(--paper-rust); }
+  .portal-shell { max-width: 780px; }
   .status-badge {
     font-family: var(--font-mono);
     font-size: 0.75rem;
@@ -33,6 +21,53 @@
   }
   .status-badge.booked { background: rgba(84, 99, 76, 0.16); color: var(--paper-sage); }
   .status-badge.cancelled { background: rgba(156, 67, 36, 0.12); color: var(--paper-rust); }
+
+  /* Lunacal-style booking layout: month grid left, day's times right. */
+  .booking-layout { display: flex; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-2); }
+  .cal { flex: 1 1 320px; min-width: 280px; }
+  .cal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: var(--space-2);
+  }
+  .cal-head .cal-month { font-weight: 600; }
+  .cal-nav {
+    background: none; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+    width: 2rem; height: 2rem; cursor: pointer; color: var(--ink); font-size: 1rem; line-height: 1;
+  }
+  .cal-nav:disabled { opacity: 0.35; cursor: default; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; }
+  .cal-dow {
+    text-align: center; font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--ink-muted); padding: 0.3rem 0;
+  }
+  .cal-day {
+    aspect-ratio: 1; border: none; border-radius: var(--radius-sm); background: none;
+    font-family: var(--font-body); font-size: 0.9rem; color: var(--ink); cursor: pointer;
+  }
+  .cal-day.open { background: rgba(196, 85, 46, 0.10); font-weight: 600; }
+  .cal-day.open:hover { background: rgba(196, 85, 46, 0.22); }
+  .cal-day:disabled { color: var(--ink-faint); cursor: default; background: none; font-weight: 400; }
+  .cal-day.selected { background: var(--rust); color: var(--on-rust); }
+  .cal-day.selected:hover { background: var(--rust); }
+
+  .day-slots { flex: 1 1 200px; min-width: 180px; }
+  .day-slots h3 {
+    font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-muted); margin: 0 0 var(--space-2);
+  }
+  .slots-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 320px; overflow-y: auto; }
+  .slot-button {
+    background: var(--paper);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: var(--ink);
+    text-align: center;
+  }
+  .slot-button:hover { border-color: var(--rust); color: var(--paper-rust); }
 </style>
 </head>
 <body class="portal">
@@ -58,14 +93,22 @@
 
   <div class="portal-card">
     <h2 id="booking-title">Book a session</h2>
-    <div class="portal-field">
-      <label for="booking-date">Date</label>
-      <input type="date" id="booking-date">
-    </div>
-    <button type="button" class="portal-button" id="find-times-btn">Find available times</button>
-    <button type="button" class="portal-button secondary" id="booking-cancel" hidden>Cancel</button>
+    <button type="button" class="portal-button secondary" id="booking-cancel" hidden>Cancel reschedule</button>
     <p class="portal-message" id="booking-message"></p>
-    <div class="slots-grid" id="slots-grid" hidden></div>
+    <div class="booking-layout">
+      <div class="cal">
+        <div class="cal-head">
+          <button type="button" class="cal-nav" id="cal-prev" aria-label="Previous month">&lsaquo;</button>
+          <span class="cal-month" id="cal-month-label"></span>
+          <button type="button" class="cal-nav" id="cal-next" aria-label="Next month">&rsaquo;</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="day-slots">
+        <h3 id="day-slots-title">Pick a date</h3>
+        <div class="slots-list" id="slots-grid"></div>
+      </div>
+    </div>
   </div>
 
   <div class="portal-card">

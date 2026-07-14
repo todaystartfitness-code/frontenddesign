@@ -1,7 +1,9 @@
 import type { ClientRow, Env, Role } from "./types";
 
 const MAGIC_LINK_TTL_SECONDS = 15 * 60;
-const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
+// 6 months: regular clients should essentially never see the login screen
+// again on a device they've used before.
+const SESSION_TTL_SECONDS = 180 * 24 * 60 * 60;
 
 export const AUDIENCE_COOKIE: Record<"app" | "admin", string> = {
   app: "fs_app_session",
