@@ -10,6 +10,12 @@
   }
 
   if (page === "login") {
+    // Already logged in on this browser (valid 6-month session)? Skip
+    // straight to the dashboard instead of showing the login form again.
+    fetch("/api/admin/settings").then(function (res) {
+      if (res.ok) window.location.href = "/admin/dashboard.html";
+    });
+
     var form = document.getElementById("request-link-form");
     var messageEl = document.getElementById("form-message");
     form.addEventListener("submit", function (e) {

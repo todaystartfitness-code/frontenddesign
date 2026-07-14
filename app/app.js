@@ -3,6 +3,12 @@
 
   var form = document.getElementById("request-link-form");
   if (form) {
+    // Already logged in on this browser (valid 6-month session)? Skip
+    // straight to the dashboard instead of showing the login form again.
+    fetch("/api/me").then(function (res) {
+      if (res.ok) window.location.href = "/app/dashboard.html";
+    });
+
     var messageEl = document.getElementById("form-message");
     form.addEventListener("submit", function (e) {
       e.preventDefault();
