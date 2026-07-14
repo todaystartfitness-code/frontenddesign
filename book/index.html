@@ -12,7 +12,7 @@
 <style>
   /* Standalone/embeddable: no site nav or footer, tighter shell, sized to
      look good inside an <iframe> as well as a full page. */
-  body.portal { max-width: 640px; padding: var(--space-3) var(--space-2); }
+  body.portal { max-width: 640px; margin: 0 auto; padding: var(--space-3) var(--space-2); }
   body.embed-modal .portal-header { display: none; }
   .portal-shell { max-width: 100%; }
   .book-trainer-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: var(--space-3); }
@@ -63,10 +63,10 @@
     aspect-ratio: 1; border: none; border-radius: var(--radius-sm); background: none;
     font-family: var(--font-body); font-size: 0.9rem; color: var(--ink); cursor: pointer;
   }
-  .cal-day.open { background: rgba(196, 85, 46, 0.10); font-weight: 600; }
-  .cal-day.open:hover { background: rgba(196, 85, 46, 0.22); }
+  .cal-day.open { background: rgba(84, 99, 76, 0.12); font-weight: 600; }
+  .cal-day.open:hover { background: rgba(84, 99, 76, 0.24); }
   .cal-day:disabled { color: var(--ink-faint); cursor: default; background: none; font-weight: 400; }
-  .cal-day.selected { background: var(--rust); color: var(--on-rust); }
+  .cal-day.selected { background: var(--paper-sage); color: var(--paper); }
   .day-slots { flex: 1 1 180px; min-width: 160px; }
   .day-slots h3 {
     font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase;
@@ -78,7 +78,7 @@
     padding: 0.6rem 0.85rem; font-family: var(--font-mono); font-size: 0.9rem; cursor: pointer;
     color: var(--ink); text-align: center;
   }
-  .slot-button:hover { border-color: var(--rust); color: var(--paper-rust); }
+  .slot-button:hover { border-color: var(--paper-sage); color: var(--paper-sage); }
   .book-nav { display: flex; justify-content: space-between; margin-top: var(--space-3); }
 </style>
 </head>
