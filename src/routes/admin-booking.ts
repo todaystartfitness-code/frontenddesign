@@ -210,10 +210,22 @@ export async function listSessions(env: Env, url: URL): Promise<Response> {
 
 export async function adminBookSession(request: Request, env: Env): Promise<Response> {
   const body = await request
-    .json<{ client_id?: number; starts_at?: number; duration_minutes?: number; deduct?: boolean }>()
+    .json<{
+      client_id?: number;
+      starts_at?: number;
+      duration_minutes?: number;
+      deduct?: boolean;
+      allow_double_booking?: boolean;
+    }>()
     .catch(
       () =>
-        ({}) as { client_id?: number; starts_at?: number; duration_minutes?: number; deduct?: boolean },
+        ({}) as {
+          client_id?: number;
+          starts_at?: number;
+          duration_minutes?: number;
+          deduct?: boolean;
+          allow_double_booking?: boolean;
+        },
     );
 
   if (typeof body.client_id !== "number" || typeof body.starts_at !== "number") {
@@ -251,11 +263,15 @@ export async function adminBookSession(request: Request, env: Env): Promise<Resp
   const startsAt = body.starts_at;
   const endsAt = startsAt + durationMinutes * 60;
 
-  // Admin overrides can book outside business hours, but two clients still
-  // can't be booked into overlapping/buffered time.
-  const available = await isSlotAvailable(env, startsAt, endsAt, undefined, true);
-  if (!available) {
-    return jsonResponse({ error: "That time conflicts with an existing session." }, 409);
+  // Admin overrides can book outside business hours, and two clients can be
+  // placed in the same overlapping slot when allow_double_booking is set
+  // (e.g. training partners who work out together) — otherwise the normal
+  // conflict check applies.
+  if (!body.allow_double_booking) {
+    const available = await isSlotAvailable(env, startsAt, endsAt, undefined, true);
+    if (!available) {
+      return jsonResponse({ error: "That time conflicts with an existing session." }, 409);
+    }
   }
 
   const result = await env.DB.prepare(

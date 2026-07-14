@@ -653,6 +653,7 @@
       client_id: parseInt(document.getElementById("book-client").value, 10),
       starts_at: startsAt,
       deduct: document.getElementById("book-deduct").checked,
+      allow_double_booking: document.getElementById("book-allow-double").checked,
     };
     if (durationInput !== "") body.duration_minutes = parseInt(durationInput, 10);
 
@@ -666,6 +667,7 @@
         setMessage(messageEl, "Session booked.", "success");
         e.target.reset();
         document.getElementById("book-deduct").checked = true;
+        document.getElementById("book-allow-double").checked = false;
         return Promise.all([loadUpcomingSessions(), loadClients()]);
       })
       .catch(function (err) {
