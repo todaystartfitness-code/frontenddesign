@@ -194,6 +194,17 @@ section[id], article[id] {
   opacity: 0.55;
 }
 
+/* "— And What Actually Fixes It" is long relative to the rest of the h2's
+   huge clamp() size — given its own smaller, dedicated size (rather than
+   sharing the h2's fluid scale) so it reliably fits on one line at every
+   viewport width instead of wrapping mid-phrase. */
+#why-it-matters h2 .accent-underline {
+  display: block;
+  margin-top: 0.15em;
+  font-size: clamp(0.95rem, 2.6vw, 1.35rem);
+  white-space: nowrap;
+}
+
 .section-head { max-width: 640px; margin: 0 0 var(--space-5); }
 .section-lede { font-size: 1.05rem; max-width: 56ch; }
 
@@ -782,8 +793,16 @@ section[id], article[id] {
 }
 .why-matters-grid .video-row { margin-top: 0; }
 
-.why-matters-body { max-width: 68ch; }
-.why-matters-body p {
+.why-matters-intro { max-width: 68ch; }
+
+.why-matters-full {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border);
+}
+
+.why-matters-intro p,
+.why-matters-full p {
   font-size: 1.08rem;
   line-height: 1.75;
 }
