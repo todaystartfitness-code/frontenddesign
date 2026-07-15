@@ -35,6 +35,7 @@ import {
   googleStatus,
 } from "./routes/google-auth";
 import {
+  cancelCheckout,
   checkoutDropIn,
   checkoutPackage,
   listBuyablePackages,
@@ -60,6 +61,7 @@ import {
   updateQuizQuestion,
 } from "./routes/admin-quiz";
 import {
+  cancelPublicCheckout,
   getPublicAvailability,
   listPublicPackages,
   listPublicQuiz,
@@ -143,6 +145,10 @@ export default {
 
         if (pathname === "/api/app/checkout/drop-in" && method === "POST") {
           return await checkoutDropIn(request, env, client, url.origin);
+        }
+
+        if (pathname === "/api/app/checkout/cancel" && method === "POST") {
+          return await cancelCheckout(request, env, client);
         }
 
         if (pathname === "/api/app/availability" && method === "GET") {
@@ -315,6 +321,9 @@ export default {
         }
         if (pathname === "/api/public/book" && method === "POST") {
           return await submitPublicBooking(request, env, url.origin);
+        }
+        if (pathname === "/api/public/checkout/cancel" && method === "POST") {
+          return await cancelPublicCheckout(request, env);
         }
         return jsonResponse({ error: "Not found." }, 404);
       }

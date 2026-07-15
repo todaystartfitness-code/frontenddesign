@@ -507,7 +507,17 @@
       }, 4000);
     } else if (purchaseParam === "cancelled") {
       setBookingMessage("Checkout was cancelled — nothing was charged.");
+      var cancelledSessionId = new URLSearchParams(window.location.search).get("session_id");
       window.history.replaceState({}, "", "/app/dashboard.html");
+      if (cancelledSessionId) {
+        // Releases the held slot right away instead of leaving it locked
+        // for up to 35 minutes with no visible explanation.
+        fetch("/api/app/checkout/cancel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: cancelledSessionId }),
+        });
+      }
     }
 
     loadSessions();

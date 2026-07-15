@@ -7,6 +7,7 @@ import { normalizePhoneE164 } from "../phone";
 import { notifyAdmin, notifyClient } from "../notify";
 import { formatPhoenixDateTime } from "../format";
 import { createMagicLinkToken } from "../auth";
+import { expirePendingPurchase } from "../purchases";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -59,6 +60,18 @@ export async function getPublicAvailability(
 
   const slots = await computeAvailableSlots(env, dateStr, pkg.session_duration_minutes, nowSeconds());
   return jsonResponse({ slots, duration_minutes: pkg.session_duration_minutes });
+}
+
+// Called by the client-side redirect when a prospect backs out of a paid
+// public-booking checkout, so the slot they were holding frees up
+// immediately instead of staying locked for up to HOLD_MINUTES. No auth —
+// the Stripe checkout session id itself is the unguessable secret here,
+// same trust model as the magic-link tokens used elsewhere in this flow.
+export async function cancelPublicCheckout(request: Request, env: Env): Promise<Response> {
+  const body = await request.json<{ session_id?: string }>().catch(() => ({}) as { session_id?: string });
+  if (!body.session_id) return jsonResponse({ error: "session_id is required." }, 400);
+  await expirePendingPurchase(env, body.session_id);
+  return jsonResponse({ ok: true });
 }
 
 export async function sendPublicBookingConfirmation(
@@ -180,7 +193,10 @@ export async function submitPublicBooking(request: Request, env: Env, origin: st
       amountCents: pkg.price_cents,
       customerEmail: email,
       successUrl: `${origin}/book/?booked=1`,
-      cancelUrl: `${origin}/book/?cancelled=1`,
+      // {CHECKOUT_SESSION_ID} is substituted by Stripe on redirect — lets the
+      // prospect immediately release this slot's hold on cancel instead of
+      // waiting out the full HOLD_MINUTES window.
+      cancelUrl: `${origin}/book/?cancelled=1&session_id={CHECKOUT_SESSION_ID}`,
       metadata: {
         kind: "package",
         client_id: String(client.id),

@@ -379,7 +379,17 @@
           ? document.getElementById("calendar-message")
           : document.getElementById("package-step-message");
         setMessage(msgEl, "Checkout was cancelled — nothing was charged. Pick a time to try again.");
+        var cancelledSessionId = params.get("session_id");
         window.history.replaceState({}, "", "/book/");
+        if (cancelledSessionId) {
+          // Releases the held slot right away instead of leaving it locked
+          // for up to 35 minutes with no visible explanation.
+          fetch("/api/public/checkout/cancel", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: cancelledSessionId }),
+          });
+        }
       }
     });
   }

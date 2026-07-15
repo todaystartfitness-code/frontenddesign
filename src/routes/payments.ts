@@ -6,6 +6,7 @@ import { createCalendarEvent } from "../google";
 import { sendPublicBookingConfirmation } from "./public";
 import { notifyAdmin } from "../notify";
 import { formatPhoenixDateTime } from "../format";
+import { expirePendingPurchase } from "../purchases";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -116,7 +117,10 @@ export async function checkoutDropIn(
     amountCents: dropIn.price_cents,
     customerEmail: client.email,
     successUrl: `${origin}/app/dashboard.html?purchase=success`,
-    cancelUrl: `${origin}/app/dashboard.html?purchase=cancelled`,
+    // {CHECKOUT_SESSION_ID} is substituted by Stripe on redirect — lets the
+    // client immediately release this slot's hold on cancel instead of
+    // waiting out the full HOLD_MINUTES window (see /api/app/checkout/cancel).
+    cancelUrl: `${origin}/app/dashboard.html?purchase=cancelled&session_id={CHECKOUT_SESSION_ID}`,
     metadata: {
       kind: "drop_in",
       client_id: String(client.id),
@@ -143,6 +147,25 @@ export async function checkoutDropIn(
   return jsonResponse({ url: checkout.url });
 }
 
+// Called by the client-side redirect when a client backs out of a drop-in
+// Stripe Checkout, so the slot they were holding frees up immediately
+// instead of staying locked for up to HOLD_MINUTES with no visible cause.
+export async function cancelCheckout(request: Request, env: Env, client: ClientRow): Promise<Response> {
+  const body = await request.json<{ session_id?: string }>().catch(() => ({}) as { session_id?: string });
+  if (!body.session_id) return jsonResponse({ error: "session_id is required." }, 400);
+
+  const purchase = await env.DB.prepare(
+    "SELECT id FROM purchases WHERE stripe_checkout_session_id = ? AND client_id = ? AND status = 'pending'",
+  )
+    .bind(body.session_id, client.id)
+    .first<{ id: number }>();
+  if (purchase) {
+    await expirePendingPurchase(env, body.session_id);
+  }
+
+  return jsonResponse({ ok: true });
+}
+
 export async function stripeWebhook(request: Request, env: Env): Promise<Response> {
   if (!isStripeConfigured(env)) return jsonResponse({ error: "Not configured." }, 503);
 
@@ -155,7 +178,7 @@ export async function stripeWebhook(request: Request, env: Env): Promise<Respons
     await fulfillPurchase(env, session.id, new URL(request.url).origin);
   } else if (event.type === "checkout.session.expired") {
     const session = event.data.object as { id: string };
-    await expirePurchase(env, session.id);
+    await expirePendingPurchase(env, session.id);
   }
 
   return jsonResponse({ received: true });
@@ -287,18 +310,4 @@ async function fulfillPurchase(env: Env, checkoutSessionId: string, origin: stri
   } catch (err) {
     console.error("Google Calendar event create failed:", err);
   }
-}
-
-async function expirePurchase(env: Env, checkoutSessionId: string): Promise<void> {
-  const purchase = await env.DB.prepare(
-    "SELECT id FROM purchases WHERE stripe_checkout_session_id = ? AND status = 'pending'",
-  )
-    .bind(checkoutSessionId)
-    .first<{ id: number }>();
-  if (!purchase) return;
-
-  await env.DB.prepare("UPDATE purchases SET status = 'expired' WHERE id = ?")
-    .bind(purchase.id)
-    .run();
-  await env.DB.prepare("DELETE FROM slot_holds WHERE purchase_id = ?").bind(purchase.id).run();
 }
