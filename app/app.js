@@ -122,6 +122,7 @@
     var reschedulingSessionId = null;
     var selectedDate = null;
     var currentBalance = 0;
+    var creditsLoaded = false; // guards against deciding drop-in vs credit before the real balance is known
     var dropInPkg = null;
     var paymentsEnabled = false;
 
@@ -162,10 +163,19 @@
       document.getElementById("pay-dropin-label").textContent =
         "Pay for a single session (" + money(dropInPkg.price_cents) + ")";
 
+      // Packages and credits load independently — whichever resolves first
+      // would otherwise force this decision using currentBalance's initial
+      // placeholder value of 0, incorrectly defaulting a client who has
+      // credits into paying for a drop-in and never reverting once the
+      // real balance arrives. Wait for the real balance before deciding.
+      if (!creditsLoaded) return;
+
       var creditRadio = document.getElementById("pay-credit");
       creditRadio.disabled = currentBalance === 0;
       if (currentBalance === 0) {
         document.getElementById("pay-dropin").checked = true;
+      } else {
+        document.getElementById("pay-credit").checked = true;
       }
     }
 
@@ -412,6 +422,7 @@
         .then(function (data) {
           balanceEl.textContent = data.balance;
           currentBalance = data.balance;
+          creditsLoaded = true;
           updatePayMethodRow();
           var table = document.getElementById("credits-table");
           var empty = document.getElementById("credits-empty");
