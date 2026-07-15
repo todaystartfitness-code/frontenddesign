@@ -194,6 +194,20 @@ section[id], article[id] {
   opacity: 0.55;
 }
 
+/* "— And What Actually Fixes It" is long relative to the rest of the h2's
+   huge clamp() size — given its own smaller, dedicated size (rather than
+   sharing the h2's fluid scale) so it reliably fits on one line at every
+   viewport width instead of wrapping mid-phrase. width: fit-content keeps
+   the underline (which spans this box's full width) hugging the text
+   instead of stretching to the h2's full column width. */
+#why-it-matters h2 .accent-underline {
+  display: block;
+  width: fit-content;
+  margin-top: 0.2em;
+  font-size: clamp(1.05rem, 2.8vw, 1.5rem);
+  white-space: nowrap;
+}
+
 .section-head { max-width: 640px; margin: 0 0 var(--space-5); }
 .section-lede { font-size: 1.05rem; max-width: 56ch; }
 
@@ -758,6 +772,124 @@ section[id], article[id] {
   /* Same credentials repeat immediately in the About section below, so
      this list is redundant weight at the top of a phone screen. */
   .hero-trust { display: none; }
+}
+
+/* ==========================================================================
+   Why This Matters
+   ========================================================================== */
+.why-matters {
+  position: relative;
+  padding: var(--space-7) 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 900px 520px at 50% 0%, rgba(219, 165, 76, 0.1), transparent 65%),
+    var(--bg);
+}
+.why-matters-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .why-matters-grid { grid-template-columns: 1fr; gap: var(--space-5); }
+}
+.why-matters-grid .video-row { margin-top: 0; }
+
+.why-matters-intro { max-width: 68ch; }
+
+.why-matters-full {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border);
+}
+
+.why-matters-intro p,
+.why-matters-full p {
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+/* Reads as a mini sub-headline for the "here's the real point" turn in the
+   copy, without breaking it onto its own line. */
+.matters-lead {
+  font-weight: 700;
+  font-size: 1.2em;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rust-light);
+  text-underline-offset: 0.2em;
+}
+
+.stat-callout {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  margin: var(--space-5) 0;
+  padding: var(--space-4);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.stat-callout-number {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+  line-height: 1;
+  color: var(--rust-light);
+  background: rgba(196, 85, 46, 0.14);
+  padding: 0.25em 0.7em;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.stat-callout-label {
+  margin: 0;
+  max-width: 40ch;
+  color: var(--ink-muted);
+  font-size: 1.08rem;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .stat-callout { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+}
+
+.why-matters-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+.why-matters-list li {
+  position: relative;
+  padding-left: 1.5em;
+  color: var(--ink-muted);
+  font-size: 1.08rem;
+  line-height: 1.6;
+}
+.why-matters-list li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.5em;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  background: var(--rust-light);
+  transform: rotate(45deg);
+}
+
+/* Same visual language as the Tagline rotator's phrases (bold, italic, amber,
+   soft glow) but static — this line doesn't rotate, so it skips the grid/
+   opacity mechanics that component needs. */
+.section-tagline {
+  margin-top: var(--space-5);
+  font-family: var(--font-headline);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  font-size: clamp(1.3rem, 3vw, 1.7rem);
+  color: var(--amber);
+  text-shadow: 0 0 40px rgba(219, 165, 76, 0.35);
 }
 
 /* ==========================================================================
