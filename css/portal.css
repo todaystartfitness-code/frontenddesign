@@ -134,6 +134,9 @@ body.portal {
 .portal-message.error { color: var(--paper-rust); }
 .portal-message.success { color: var(--paper-sage); }
 
+.sms-consent { font-size: 0.78rem; color: var(--ink-muted); margin: 0.5rem 0 0; }
+.sms-consent a { color: var(--paper-rust); }
+
 .portal-table {
   width: 100%;
   border-collapse: collapse;
