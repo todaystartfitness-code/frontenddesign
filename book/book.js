@@ -224,6 +224,13 @@
           if (day.open) btn.addEventListener("click", function () { selectDate(day.date, btn); });
           calGrid.appendChild(btn);
         });
+      })
+      .catch(function () {
+        setMessage(
+          document.getElementById("calendar-message"),
+          "Could not load the calendar. Please refresh and try again.",
+          "error",
+        );
       });
   }
 
@@ -241,8 +248,10 @@
     clearSlots("Loading…");
 
     fetch("/api/public/availability?package_id=" + selectedPackage.id + "&date=" + selectedDate)
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
+      .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+      .then(function (r) {
+        if (!r.ok) throw new Error(r.data.error || "Could not load available times.");
+        var data = r.data;
         if (!data.slots || data.slots.length === 0) {
           clearSlots(dayTitle);
           var none = document.createElement("p");
@@ -263,6 +272,14 @@
           });
           slotsGrid.appendChild(btn);
         });
+      })
+      .catch(function (err) {
+        clearSlots(dayTitle);
+        setMessage(
+          document.getElementById("calendar-message"),
+          err.message || "Could not load available times. Please try again.",
+          "error",
+        );
       });
   }
 

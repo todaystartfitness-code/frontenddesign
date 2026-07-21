@@ -282,6 +282,9 @@
             }
             calGrid.appendChild(btn);
           });
+        })
+        .catch(function () {
+          setBookingMessage("Could not load the calendar. Please refresh and try again.", "error");
         });
     }
 
@@ -306,8 +309,10 @@
       else if (payMethod() === "drop_in") url += "&mode=drop_in";
 
       fetch(url)
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
+        .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+        .then(function (r) {
+          if (!r.ok) throw new Error(r.data.error || "Could not load available times.");
+          var data = r.data;
           if (data.message) {
             clearSlots(dayTitle);
             setBookingMessage(data.message, "error");
@@ -330,6 +335,10 @@
             btn.addEventListener("click", function () { confirmSlot(slot.starts_at); });
             slotsGrid.appendChild(btn);
           });
+        })
+        .catch(function (err) {
+          clearSlots(dayTitle);
+          setBookingMessage(err.message || "Could not load available times. Please try again.", "error");
         });
     }
 
