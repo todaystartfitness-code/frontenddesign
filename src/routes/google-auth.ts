@@ -1,8 +1,8 @@
 import type { Env } from "../types";
 import {
+  checkGoogleConnection,
   exchangeCodeForRefreshToken,
   googleAuthUrl,
-  isGoogleConnected,
   storeRefreshToken,
 } from "../google";
 
@@ -14,9 +14,11 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 export async function googleStatus(env: Env): Promise<Response> {
+  const { connected, error } = await checkGoogleConnection(env);
   return jsonResponse({
     configured: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
-    connected: await isGoogleConnected(env.DB),
+    connected,
+    error: error ?? null,
   });
 }
 

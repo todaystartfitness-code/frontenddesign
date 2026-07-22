@@ -366,6 +366,15 @@ export default {
       return await env.ASSETS.fetch(request);
     } catch (err) {
       console.error(err);
+      if (err instanceof Error && /^Google (freeBusy|token refresh|event) /.test(err.message)) {
+        return jsonResponse(
+          {
+            error:
+              "Google Calendar sync failed, so booking can't be confirmed right now. Check the Google Calendar connection in admin Settings and reconnect if needed.",
+          },
+          503,
+        );
+      }
       return jsonResponse({ error: "Internal server error." }, 500);
     }
   },

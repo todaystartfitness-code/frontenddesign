@@ -37,10 +37,6 @@ export async function getStoredRefreshToken(db: D1Database): Promise<string | nu
   return row?.value ?? null;
 }
 
-export async function isGoogleConnected(db: D1Database): Promise<boolean> {
-  return (await getStoredRefreshToken(db)) !== null;
-}
-
 export async function exchangeCodeForRefreshToken(
   env: Env,
   code: string,
@@ -76,6 +72,21 @@ export async function storeRefreshToken(db: D1Database, token: string): Promise<
     )
     .bind(token, token)
     .run();
+}
+
+// Presence of a stored refresh token doesn't mean Google still honors it
+// (revoked access, expired after 6 months unused, password change, etc.) —
+// this actually exercises the refresh so the dashboard's "Connected" status
+// reflects reality instead of just "we saved a token once."
+export async function checkGoogleConnection(env: Env): Promise<{ connected: boolean; error?: string }> {
+  const refreshToken = await getStoredRefreshToken(env.DB);
+  if (!refreshToken) return { connected: false };
+  try {
+    await getAccessToken(env);
+    return { connected: true };
+  } catch (err) {
+    return { connected: false, error: err instanceof Error ? err.message : "Google token refresh failed." };
+  }
 }
 
 async function getAccessToken(env: Env): Promise<string | null> {

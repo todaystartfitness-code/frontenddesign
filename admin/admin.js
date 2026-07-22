@@ -1018,6 +1018,11 @@
           statusEl.textContent = "Not configured yet — the GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET secrets need to be added first.";
           connectBtn.hidden = true;
           disconnectBtn.hidden = true;
+        } else if (data.error) {
+          statusEl.className = "portal-message error";
+          statusEl.textContent = "Connection expired or was revoked — reconnect Google Calendar below. Bookings are blocked until this is fixed.";
+          connectBtn.hidden = false;
+          disconnectBtn.hidden = false;
         } else {
           statusEl.className = "portal-message";
           statusEl.textContent = "Not connected.";
