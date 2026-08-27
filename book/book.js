@@ -335,6 +335,7 @@
           return;
         }
         setMessage(document.getElementById("done-message"), r.data.message || "You're booked!", "success");
+        if (window.gtag) gtag('event', 'conversion', {'send_to': 'AW-617114205/9V3PCKHwtsIZEN3UoaYC'});
         showStep("done");
       })
       .catch(function (err) {
@@ -364,6 +365,7 @@
       "Payment received — you're booked! Check your email or phone for a link to manage your session.",
       "success",
     );
+    if (window.gtag) gtag('event', 'conversion', {'send_to': 'AW-617114205/9V3PCKHwtsIZEN3UoaYC'});
     showStep("done");
     window.history.replaceState({}, "", "/book/");
   } else {
