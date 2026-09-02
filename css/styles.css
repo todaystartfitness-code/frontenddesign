@@ -707,6 +707,7 @@ section[id], article[id] {
 .hero-identity-line .hero-word {
   grid-area: 1 / 1;
   opacity: 0;
+  color: var(--ink);
 }
 .hero-identity-line .hero-word:first-child { opacity: 1; }
 .js-ready .hero-identity-line .hero-word {
