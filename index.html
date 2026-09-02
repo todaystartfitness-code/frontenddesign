@@ -63,7 +63,11 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<!-- Loaded non-render-blocking: fetched immediately but only applied once
+     ready, via the media="print" swap trick, so it can't delay first paint. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap" rel="stylesheet"></noscript>
 
 <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -120,13 +124,15 @@
 
     <div class="wrap hero-inner">
       <p class="eyebrow hero-eyebrow reveal-up" data-anim="fade">Phoenix, Arizona &middot; Personal Strength Training &amp; Thai Bodywork</p>
-      <h1 class="hero-title" id="hero-title" aria-label="Let your body show how strong you really are.">
-        <span class="line" data-line>Let your body show<span class="hero-how hero-how--desktop"> how</span></span>
-        <span class="line" data-line><span class="hero-how hero-how--mobile">how </span><em class="hero-word-rotator" aria-hidden="true"><span class="hero-word">strong</span><span class="hero-word">resilient</span><span class="hero-word">capable</span></em> <span class="hero-line-break">you really are.</span></span>
+      <h1 class="hero-title" id="hero-title" aria-label="Strength Training. For People In Their 30's and 40's. You Lift To Be Strong.">
+        <span class="line" data-line>Strength Training</span>
+        <span class="line hero-subline" data-line>For People In Their 30&rsquo;s and 40&rsquo;s</span>
+        <span class="line hero-identity-line" data-line>You Lift To Be <em class="hero-word-rotator" aria-hidden="true"><span class="hero-word">Strong</span><span class="hero-word">Resilient</span><span class="hero-word">Capable</span></em></span>
       </h1>
       <p class="hero-sub reveal-up" data-anim="fade">
-        Built by a 10-year NASM-certified fitness trainer &mdash; personal strength coaching
-        and therapeutic Thai bodywork, one Phoenix studio, one standard.
+        Build your strength safely, without injury, so you can move with less pain
+        and more confidence, like you&rsquo;re in your 20&rsquo;s again. You&rsquo;ll be trained
+        by a 10-year NASM-certified fitness trainer in Phoenix, AZ.
       </p>
 
       <div class="hero-actions reveal-up" data-anim="fade">
