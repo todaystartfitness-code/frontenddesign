@@ -672,47 +672,27 @@ section[id], article[id] {
   color: var(--ink);
 }
 .hero-title .line { display: block; overflow: hidden; }
-.hero-title em { color: var(--rust-light); font-style: normal; }
 
-/* Desktop only: break "you really are." onto its own line, so the headline
-   reads as 3 lines total instead of wrapping into 4. Mobile keeps its
-   natural wrap (span stays inline, no forced break). */
-@media (min-width: 861px) {
-  .hero-line-break { display: block; }
-}
-
-/* "how" travels with "show" on desktop (so it wraps naturally at the end of
-   line 1 instead of always starting a new line), but stays with the rotating
-   word on mobile, where line 1 has less room to spare. */
-.hero-how--desktop { display: none; }
-@media (min-width: 861px) {
-  .hero-how--desktop { display: inline; }
-  .hero-how--mobile { display: none; }
+/* "For People In Their 30's and 40's" — a subheading line, sized well below
+   the main headline so "Strength Training" stays the dominant statement. */
+.hero-subline {
+  font-weight: 600;
+  font-size: clamp(1.3rem, 3.2vw, 2rem);
+  color: var(--ink-muted);
+  margin-top: 0.2em;
 }
 
-/* Rotating hero word: only "strong" cycles, rest of the headline stays put.
-   Stacked via grid so every word occupies the same cell; JS toggles which
-   one is active/next/prev to drive the flip. No-JS fallback just shows the
-   first word plainly. */
-.hero-word-rotator {
-  position: relative;
-  display: inline-grid;
-  overflow: hidden;
-  vertical-align: bottom;
+/* "You Lift To Be Strong" — same identity-line treatment as the tagline
+   strip below the hero (bold, italic, amber, soft glow). */
+.hero-identity-line {
+  font-family: var(--font-headline);
+  font-weight: 800;
+  font-style: italic;
+  font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+  color: var(--amber);
+  text-shadow: 0 0 40px rgba(219, 165, 76, 0.35);
+  margin-top: 0.5em;
 }
-.hero-word {
-  grid-area: 1 / 1;
-  opacity: 0;
-}
-.hero-word:first-child { opacity: 1; }
-.js-ready .hero-word {
-  opacity: 0;
-  transform: translateY(100%);
-  transition: transform 0.6s var(--ease-spring), opacity 0.4s var(--ease-out);
-}
-.js-ready .hero-word.is-active { opacity: 1; transform: translateY(0); }
-.js-ready .hero-word.is-next { opacity: 0; transform: translateY(100%); }
-.js-ready .hero-word.is-prev { opacity: 0; transform: translateY(-100%); }
 
 .hero-sub {
   max-width: 42ch;
