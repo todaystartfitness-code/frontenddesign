@@ -23,6 +23,30 @@ export async function notifyClient(
   }
 }
 
+// Booking confirmation and reminder emails must never be silently skipped in
+// favor of SMS (unlike notifyClient above) — email always goes out, with SMS
+// sent as a bonus best-effort channel on top when the client has a phone on
+// file and Twilio is configured. Each channel fails independently so an SMS
+// hiccup (e.g. Twilio A2P registration issues) can never suppress the email.
+export async function notifyClientAlwaysEmail(
+  env: Env,
+  client: ClientRow,
+  params: { smsBody: string; emailSubject: string; emailBody: string },
+): Promise<void> {
+  try {
+    await sendEmail(env, client.email, params.emailSubject, params.emailBody);
+  } catch (err) {
+    console.error("notifyClientAlwaysEmail email failed:", err);
+  }
+  if (client.phone && isTwilioConfigured(env)) {
+    try {
+      await sendSms(env, client.phone, params.smsBody);
+    } catch (err) {
+      console.error("notifyClientAlwaysEmail sms failed:", err);
+    }
+  }
+}
+
 // Notifies the admin (the one client row with role='admin') about a
 // client-initiated booking/reschedule/cancellation. SMS to the admin's
 // notification phone number (a settings key, editable in the admin panel)

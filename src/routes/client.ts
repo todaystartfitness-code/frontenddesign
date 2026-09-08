@@ -4,7 +4,8 @@ import { adjustLedgerCredits, getActiveBalance, getSoonestExpiringLedger, nowSec
 import { computeAvailableSlots, getSettings, isSlotAvailable } from "../availability";
 import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from "../google";
 import { normalizePhoneE164 } from "../phone";
-import { notifyAdmin, notifyClient } from "../notify";
+import { hashPassword } from "../password";
+import { notifyAdmin, notifyClient, notifyClientAlwaysEmail } from "../notify";
 import { formatPhoenixDateTime } from "../format";
 
 // Calendar mirroring is best-effort: a Google hiccup shouldn't lose a
@@ -38,8 +39,23 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-export async function getMe(client: ClientRow): Promise<Response> {
-  return jsonResponse({ client });
+export async function getMe(env: Env, client: ClientRow): Promise<Response> {
+  const row = await env.DB.prepare("SELECT password_hash FROM clients WHERE id = ?")
+    .bind(client.id)
+    .first<{ password_hash: string | null }>();
+  return jsonResponse({ client, hasPassword: Boolean(row?.password_hash) });
+}
+
+export async function setPassword(request: Request, env: Env, client: ClientRow): Promise<Response> {
+  const body = await request.json<{ password?: string }>().catch(() => ({}) as { password?: string });
+  const password = body.password ?? "";
+  if (password.length < 8) {
+    return jsonResponse({ error: "Password must be at least 8 characters." }, 400);
+  }
+
+  const hash = await hashPassword(password);
+  await env.DB.prepare("UPDATE clients SET password_hash = ? WHERE id = ?").bind(hash, client.id).run();
+  return jsonResponse({ ok: true });
 }
 
 export async function updateMyPhone(request: Request, env: Env, client: ClientRow): Promise<Response> {
@@ -234,7 +250,7 @@ export async function bookSession(request: Request, env: Env, client: ClientRow)
   );
 
   const when = formatPhoenixDateTime(startsAt);
-  await notifyClient(env, client, {
+  await notifyClientAlwaysEmail(env, client, {
     smsBody: `FitStrong Club: your session on ${when} is confirmed.`,
     emailSubject: "Session confirmed — FitStrong Club",
     emailBody: `<p>Your session on ${when} is confirmed.</p>`,

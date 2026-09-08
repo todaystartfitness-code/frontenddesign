@@ -3,7 +3,7 @@ import { adjustLedgerCredits, getSoonestExpiringLedger, nowSeconds } from "../db
 import { getSettings, isSlotAvailable } from "../availability";
 import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from "../google";
 import { normalizePhoneE164 } from "../phone";
-import { notifyClient } from "../notify";
+import { notifyClient, notifyClientAlwaysEmail } from "../notify";
 import { formatPhoenixDateTime } from "../format";
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -316,7 +316,7 @@ export async function adminBookSession(request: Request, env: Env): Promise<Resp
 
   if (clientRow) {
     const when = formatPhoenixDateTime(startsAt);
-    await notifyClient(env, clientRow, {
+    await notifyClientAlwaysEmail(env, clientRow, {
       smsBody: `FitStrong Club: you're booked for a session on ${when}.`,
       emailSubject: "Session booked — FitStrong Club",
       emailBody: `<p>You're booked for a session on ${when}.</p>`,

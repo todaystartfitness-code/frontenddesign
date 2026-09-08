@@ -98,6 +98,26 @@
     <button type="button" class="portal-button" id="save-phone-btn">Save</button>
     <p class="portal-message" id="phone-message"></p>
   </div>
+
+  <div class="portal-card">
+    <h2>Password login</h2>
+    <p class="portal-empty" id="password-status-text">Set a password to log in faster next time, without waiting for an email link.</p>
+    <form id="password-form">
+      <div class="portal-row">
+        <div class="portal-field">
+          <label for="new-password">New password</label>
+          <input type="password" id="new-password" autocomplete="new-password" placeholder="At least 8 characters">
+        </div>
+        <div class="portal-field">
+          <label for="confirm-password">Confirm password</label>
+          <input type="password" id="confirm-password" autocomplete="new-password" placeholder="Retype password">
+        </div>
+      </div>
+      <button type="submit" class="portal-button" id="save-password-btn">Save password</button>
+      <p class="portal-message" id="password-message"></p>
+    </form>
+  </div>
+
   <div class="portal-card">
     <h2>Active credits</h2>
     <table class="portal-table" id="credits-table" hidden>
@@ -157,6 +177,6 @@
     <p class="portal-empty" id="sessions-empty" hidden>No sessions yet.</p>
   </div>
 </div>
-<script src="/app/app.js?v=5"></script>
+<script src="/app/app.js?v=6"></script>
 </body>
 </html>

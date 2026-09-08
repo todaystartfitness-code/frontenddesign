@@ -1,6 +1,6 @@
 import type { Env } from "./types";
 import { getSessionClient } from "./auth";
-import { handleLogout, handleRequestLink, handleVerify } from "./routes/auth";
+import { handleLogout, handlePasswordLogin, handleRequestLink, handleVerify } from "./routes/auth";
 import {
   adjustClientCredits,
   createClient,
@@ -50,6 +50,7 @@ import {
   getMyCredits,
   getMySessions,
   rescheduleMySession,
+  setPassword,
   updateMyPhone,
 } from "./routes/client";
 import { sendUpcomingReminders } from "./reminders";
@@ -102,17 +103,27 @@ export default {
         return jsonResponse({ error: "Not found." }, 404);
       }
 
+      if (pathname === "/api/auth/app/password-login" && method === "POST") {
+        return await handlePasswordLogin(request, env);
+      }
+
       // --- Client-facing API: /api/me, /api/me/credits -------------------
       if (pathname === "/api/me" && method === "GET") {
         const client = await getSessionClient(env, request, "app");
         if (!client) return jsonResponse({ error: "Not authenticated." }, 401);
-        return await getMe(client);
+        return await getMe(env, client);
       }
 
       if (pathname === "/api/me" && method === "PATCH") {
         const client = await getSessionClient(env, request, "app");
         if (!client) return jsonResponse({ error: "Not authenticated." }, 401);
         return await updateMyPhone(request, env, client);
+      }
+
+      if (pathname === "/api/me/password" && method === "POST") {
+        const client = await getSessionClient(env, request, "app");
+        if (!client) return jsonResponse({ error: "Not authenticated." }, 401);
+        return await setPassword(request, env, client);
       }
 
       if (pathname === "/api/me/credits" && method === "GET") {

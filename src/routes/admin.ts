@@ -129,7 +129,9 @@ export async function updatePackage(
 
 export async function listClients(env: Env): Promise<Response> {
   const { results } = await env.DB.prepare(
-    "SELECT * FROM clients WHERE role = 'client' ORDER BY created_at DESC",
+    // Explicit columns (not SELECT *) so a client's password_hash never
+    // reaches this JSON response, even after it's added below.
+    "SELECT id, email, phone, name, role, created_at FROM clients WHERE role = 'client' ORDER BY created_at DESC",
   ).all<ClientRow>();
 
   const clients = await Promise.all(
@@ -345,7 +347,11 @@ export async function adjustClientCredits(
 }
 
 export async function getClientDetail(env: Env, clientId: number): Promise<Response> {
-  const client = await env.DB.prepare("SELECT * FROM clients WHERE id = ? AND role = 'client'")
+  const client = await env.DB.prepare(
+    // Explicit columns (not SELECT *) — this row is returned as-is below, so
+    // password_hash must never be among them.
+    "SELECT id, email, phone, name, role, created_at FROM clients WHERE id = ? AND role = 'client'",
+  )
     .bind(clientId)
     .first<ClientRow>();
   if (!client) {

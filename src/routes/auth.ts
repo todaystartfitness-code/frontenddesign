@@ -9,6 +9,7 @@ import {
 import { sendMagicLinkEmail } from "../email";
 import { sendMagicLinkSms } from "../twilio";
 import { looksLikeEmail, normalizePhoneE164 } from "../phone";
+import { verifyPassword } from "../password";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -97,6 +98,37 @@ export async function handleRequestLink(
     await sendMagicLinkSms(env, phone, verifyUrl);
   }
   return jsonResponse(genericMessage);
+}
+
+// Password login is client-only (app audience) — magic link stays available
+// for every client as a fallback, including those who never set a password.
+export async function handlePasswordLogin(request: Request, env: Env): Promise<Response> {
+  const body = await request
+    .json<{ email?: string; password?: string }>()
+    .catch(() => ({}) as { email?: string; password?: string });
+  const email = (body.email ?? "").trim().toLowerCase();
+  const password = body.password ?? "";
+
+  if (!email || !password) {
+    return jsonResponse({ error: "Email and password are required." }, 400);
+  }
+
+  const incorrect = { error: "Incorrect email or password." };
+  const row = await env.DB.prepare(
+    "SELECT id, password_hash FROM clients WHERE email = ? AND role = 'client'",
+  )
+    .bind(email)
+    .first<{ id: number; password_hash: string | null }>();
+
+  if (!row || !row.password_hash || !(await verifyPassword(password, row.password_hash))) {
+    return jsonResponse(incorrect, 401);
+  }
+
+  const sessionToken = await createSession(env.DB, row.id);
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { "Content-Type": "application/json", "Set-Cookie": sessionCookieHeader("app", sessionToken) },
+  });
 }
 
 export async function handleVerify(

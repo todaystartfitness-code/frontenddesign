@@ -26,8 +26,26 @@
       <button type="submit" class="portal-button">Send me a login link</button>
       <p class="portal-message" id="form-message"></p>
     </form>
+    <p id="toggle-password-row" style="margin-top: var(--space-3);">
+      <button type="button" class="link-button" id="toggle-password-login">Have a password? Log in directly</button>
+    </p>
+    <form id="password-login-form" hidden>
+      <div class="portal-field">
+        <label for="password-email">Email</label>
+        <input type="email" id="password-email" name="username" required autocomplete="username" placeholder="you@example.com">
+      </div>
+      <div class="portal-field">
+        <label for="password-password">Password</label>
+        <input type="password" id="password-password" name="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="portal-button">Log in</button>
+      <p class="portal-message" id="password-form-message"></p>
+      <p style="margin-top: var(--space-2);">
+        <button type="button" class="link-button" id="back-to-link-login">Use a login link instead</button>
+      </p>
+    </form>
   </div>
 </div>
-<script src="/app/app.js?v=5"></script>
+<script src="/app/app.js?v=6"></script>
 </body>
 </html>

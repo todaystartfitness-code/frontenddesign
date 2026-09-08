@@ -31,6 +31,55 @@
           messageEl.textContent = "Something went wrong. Please try again.";
         });
     });
+
+    var toggleBtn = document.getElementById("toggle-password-login");
+    var toggleRow = document.getElementById("toggle-password-row");
+    var backBtn = document.getElementById("back-to-link-login");
+    var pwForm = document.getElementById("password-login-form");
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", function () {
+        form.hidden = true;
+        toggleRow.hidden = true;
+        pwForm.hidden = false;
+      });
+    }
+    if (backBtn) {
+      backBtn.addEventListener("click", function () {
+        pwForm.hidden = true;
+        form.hidden = false;
+        toggleRow.hidden = false;
+      });
+    }
+    if (pwForm) {
+      var pwMessageEl = document.getElementById("password-form-message");
+      pwForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        pwMessageEl.className = "portal-message";
+        pwMessageEl.textContent = "Logging in…";
+
+        fetch("/api/auth/app/password-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: document.getElementById("password-email").value,
+            password: document.getElementById("password-password").value,
+          }),
+        })
+          .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+          .then(function (r) {
+            if (!r.ok) throw new Error(r.data.error);
+            // Navigating (rather than just updating page state) is what lets
+            // Chrome and other browsers recognize this as a successful login
+            // and offer to save the password for next time.
+            window.location.href = "/app/dashboard.html";
+          })
+          .catch(function (err) {
+            pwMessageEl.className = "portal-message error";
+            pwMessageEl.textContent = err.message || "Incorrect email or password.";
+          });
+      });
+    }
   }
 
   var balanceEl = document.getElementById("balance");
@@ -44,6 +93,10 @@
       if (!data || !data.client) return;
       var phoneInput = document.getElementById("my-phone");
       if (phoneInput) phoneInput.value = data.client.phone || "";
+      var pwStatusText = document.getElementById("password-status-text");
+      if (pwStatusText && data.hasPassword) {
+        pwStatusText.textContent = "You have a password set. Enter a new one below to change it.";
+      }
     });
 
     var logoutLink = document.getElementById("logout-link");
@@ -76,6 +129,48 @@
           .catch(function (err) {
             messageEl.className = "portal-message error";
             messageEl.textContent = err.message || "Could not save phone number.";
+          });
+      });
+    }
+
+    var passwordForm = document.getElementById("password-form");
+    if (passwordForm) {
+      passwordForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var messageEl = document.getElementById("password-message");
+        var newPw = document.getElementById("new-password").value;
+        var confirmPw = document.getElementById("confirm-password").value;
+
+        if (newPw.length < 8) {
+          messageEl.className = "portal-message error";
+          messageEl.textContent = "Password must be at least 8 characters.";
+          return;
+        }
+        if (newPw !== confirmPw) {
+          messageEl.className = "portal-message error";
+          messageEl.textContent = "Passwords don't match.";
+          return;
+        }
+
+        messageEl.className = "portal-message";
+        messageEl.textContent = "Saving…";
+        fetch("/api/me/password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: newPw }),
+        })
+          .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+          .then(function (r) {
+            if (!r.ok) throw new Error(r.data.error);
+            messageEl.className = "portal-message success";
+            messageEl.textContent = "Password saved.";
+            passwordForm.reset();
+            var pwStatusText = document.getElementById("password-status-text");
+            if (pwStatusText) pwStatusText.textContent = "You have a password set. Enter a new one below to change it.";
+          })
+          .catch(function (err) {
+            messageEl.className = "portal-message error";
+            messageEl.textContent = err.message || "Could not save password.";
           });
       });
     }

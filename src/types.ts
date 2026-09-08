@@ -101,5 +101,7 @@ export interface SessionRow {
   cancelled_reason: string | null;
   google_event_id: string | null;
   reminder_sent: number;
+  reminder_24h_sent: number;
+  reminder_2h_sent: number;
   created_at: number;
 }

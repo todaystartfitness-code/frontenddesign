@@ -4,7 +4,7 @@ import { computeAvailableSlots, isSlotAvailable } from "../availability";
 import { createCalendarEvent } from "../google";
 import { createCheckoutSession, isStripeConfigured } from "../stripe";
 import { normalizePhoneE164 } from "../phone";
-import { notifyAdmin, notifyClient } from "../notify";
+import { notifyAdmin, notifyClientAlwaysEmail } from "../notify";
 import { formatPhoenixDateTime } from "../format";
 import { createMagicLinkToken } from "../auth";
 import { expirePendingPurchase } from "../purchases";
@@ -84,7 +84,7 @@ export async function sendPublicBookingConfirmation(
   const when = formatPhoenixDateTime(startsAt);
   const token = await createMagicLinkToken(env.DB, client.email, "app", "email");
   const loginUrl = `${origin}/api/auth/app/verify?token=${token}`;
-  await notifyClient(env, client, {
+  await notifyClientAlwaysEmail(env, client, {
     smsBody: `FitStrong Club: you're booked for ${pkg.name} on ${when}. Manage your account: ${loginUrl}`,
     emailSubject: "You're booked! — FitStrong Club",
     emailBody: `<p>You're booked for ${pkg.name} on ${when}.</p><p><a href="${loginUrl}">Log in to manage your sessions</a> (this link expires in 15 minutes — you can always request a new one from the login page).</p>`,
