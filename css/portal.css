@@ -136,6 +136,7 @@ body.portal {
 
 .sms-consent { font-size: 0.78rem; color: var(--ink-muted); margin: 0.5rem 0 0; }
 .sms-consent a { color: var(--paper-rust); }
+.liability-disclaimer { font-size: 0.78rem; color: var(--ink-muted); margin: 1rem 0 0; }
 
 .portal-table {
   width: 100%;
