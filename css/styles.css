@@ -1106,6 +1106,10 @@ section[id], article[id] {
 }
 .price-detail { color: var(--ink-faint); font-size: 0.92rem; }
 .price-detail s { opacity: 0.7; }
+.price-note { margin: 0.5em 0 0; font-size: 0.82rem; font-style: italic; color: var(--ink-faint); }
+/* "8–12 Weeks" runs longer than a dollar figure — sized down so it doesn't
+   look oversized/cramped at the same scale as a short price like "$1,200". */
+.price-now--timeline { font-size: 1.7rem; }
 
 .service-list { margin-bottom: var(--space-4); }
 .service-list li {
