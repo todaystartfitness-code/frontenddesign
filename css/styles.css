@@ -987,6 +987,10 @@ section[id], article[id] {
 @media (max-width: 860px) {
   .service-grid { grid-template-columns: 1fr; }
 }
+.offer-grid { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 1024px) {
+  .offer-grid { grid-template-columns: 1fr; }
+}
 
 .service-card {
   position: relative;
@@ -1061,6 +1065,17 @@ section[id], article[id] {
 
 .service-card h3 { margin-bottom: var(--space-2); color: var(--ink); }
 .service-copy { max-width: 44ch; }
+/* Visual flag for content that hasn't been finalized yet — dashed border and
+   muted tone so it never reads as intentional/finished copy. */
+.badge--pending {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  color: var(--ink-faint);
+}
+.offer-copy-pending {
+  font-style: italic;
+  color: var(--ink-faint);
+}
 .price-pitch {
   max-width: 40ch;
   margin-top: var(--space-2);
@@ -1568,6 +1583,10 @@ section[id], article[id] {
   padding-top: var(--space-3);
   font-size: 0.8rem;
   color: var(--ink-faint);
+}
+.footer-disclaimer {
+  max-width: 72ch;
+  margin: 0 0 var(--space-2);
 }
 
 /* ==========================================================================
