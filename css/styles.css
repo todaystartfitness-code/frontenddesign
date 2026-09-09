@@ -1065,17 +1065,6 @@ section[id], article[id] {
 
 .service-card h3 { margin-bottom: var(--space-2); color: var(--ink); }
 .service-copy { max-width: 44ch; }
-/* Visual flag for content that hasn't been finalized yet — dashed border and
-   muted tone so it never reads as intentional/finished copy. */
-.badge--pending {
-  background: transparent;
-  border: 1px dashed var(--border-strong);
-  color: var(--ink-faint);
-}
-.offer-copy-pending {
-  font-style: italic;
-  color: var(--ink-faint);
-}
 .price-pitch {
   max-width: 40ch;
   margin-top: var(--space-2);
