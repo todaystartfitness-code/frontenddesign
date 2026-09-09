@@ -1125,11 +1125,7 @@ section[id], article[id] {
    ========================================================================== */
 .studio {
   padding: var(--space-7) 0;
-  /* Raised, rust-warmed band — breaks up the run of flat --bg sections
-     between the paper Services section above and Results below. */
-  background:
-    radial-gradient(ellipse 900px 520px at 92% 8%, rgba(196, 85, 46, 0.14), transparent 62%),
-    var(--surface);
+  background: var(--paper);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
