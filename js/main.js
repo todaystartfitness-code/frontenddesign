@@ -6,7 +6,7 @@
 
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---------------- Hero word rotator ("strong" -> "resilient" -> "capable") ---------------- */
+  /* ---------------- Hero word rotator ("Strong" -> "Resilient" -> "Capable") ---------------- */
   (function setupHeroWordRotator() {
     var words = document.querySelectorAll(".hero-word-rotator .hero-word");
     if (!words.length) return;
