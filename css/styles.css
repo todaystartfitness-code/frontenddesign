@@ -898,6 +898,35 @@ section[id], article[id] {
 }
 
 /* ==========================================================================
+   The Rules
+   ========================================================================== */
+.rules { padding: var(--space-7) 0; }
+
+/* ==========================================================================
+   Strength Nights
+   ========================================================================== */
+.strength-nights {
+  padding: var(--space-7) 0;
+  text-align: center;
+  background: var(--bg);
+}
+.strength-nights-inner { max-width: 720px; margin: 0 auto; }
+.strength-nights .section-head { margin: 0 auto var(--space-5); text-align: center; }
+.strength-nights .section-lede { margin: 0 auto; }
+.strength-nights-offer {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border);
+}
+.strength-nights-offer-line { margin: 0 0 var(--space-2); }
+.strength-nights-waitlist-note {
+  margin-top: var(--space-3);
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+}
+.strength-nights-waitlist-note a { color: var(--rust-light); }
+
+/* ==========================================================================
    Tagline rotator
    ========================================================================== */
 .tagline {
